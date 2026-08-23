@@ -36,6 +36,7 @@ async def fetch_all(model: type[SQLModel], **filters) -> list[Any]:
     async with AsyncSession(engine) as session:
         stmt = select(model)
         for key, value in filters.items():
-            stmt = stmt.where(getattr(model, key) == value)
+            if value is not None:
+                stmt = stmt.where(getattr(model, key) == value)
         result = await session.execute(stmt)
         return list(result.scalars().all())

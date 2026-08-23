@@ -1,3 +1,5 @@
+import HistoryList from "@/components/HistoryList";
+
 export default function HistoryPage() {
   return (
     <section className="space-y-4">
@@ -5,7 +7,7 @@ export default function HistoryPage() {
       <p className="text-sm opacity-70">
         Timeline pemantauan perkembangan daun dari waktu ke waktu.
       </p>
-      <p className="text-sm">Fitur grafik histori akan ditampilkan di sini (Milestone 3).</p>
+      <HistoryList />
     </section>
   );
 }

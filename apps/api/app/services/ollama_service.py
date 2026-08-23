@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import uuid
 
 from app.core.ollama import ollama_generate
 from app.core.config import get_settings

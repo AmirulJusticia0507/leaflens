@@ -1,4 +1,9 @@
-import type { ScanResponse, HistoryItem } from "@leaflens/shared";
+import type {
+  ScanResponse,
+  HistoryItem,
+  PlantPublic,
+  PlantCreate,
+} from "@leaflens/shared";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -27,5 +32,22 @@ async function fetchHistory(plantId?: string): Promise<HistoryItem[]> {
   return res.json();
 }
 
-export const api = { uploadScan, fetchHistory };
-export type { ScanResponse, HistoryItem };
+async function addPlant(payload: PlantCreate): Promise<PlantPublic> {
+  const res = await fetch(`${API_BASE}/api/v1/plants`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Gagal menyimpan tanaman: ${res.status}`);
+  return res.json();
+}
+
+async function fetchPlants(): Promise<PlantPublic[]> {
+  const res = await fetch(`${API_BASE}/api/v1/plants`);
+  if (!res.ok) throw new Error(`Gagal memuat daftar tanaman: ${res.status}`);
+  return res.json();
+}
+
+export const api = { uploadScan, fetchHistory, addPlant, fetchPlants };
+export { API_BASE };
+export type { ScanResponse, HistoryItem, PlantPublic, PlantCreate };
