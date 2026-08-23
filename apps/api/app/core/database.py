@@ -47,5 +47,96 @@ async def fetch_all(model: type[SQLModel], **filters) -> list[Any]:
         for key, value in filters.items():
             if value is not None:
                 stmt = stmt.where(getattr(model, key) == value)
-        result = await session.execute(stmt)
-        return list(result.scalars().all())
+        result = await session.exec(stmt)
+        return list(result.all())
+
+
+async def seed_initial_data() -> None:
+    from app.models import LeafScan, Plant
+
+    plants = await fetch_all(Plant)
+    if plants:
+        return
+
+    mango = Plant(
+        common_name="Mangga Manis (Harum Manis)",
+        scientific_name="Mangifera indica",
+        plant_type="Tree",
+        avg_lifespan="100 - 300 tahun",
+        growth_speed="Sedang",
+    )
+    vine = Plant(
+        common_name="Sirih Gading (Heartleaf Vine)",
+        scientific_name="Epipremnum aureum",
+        plant_type="Vine",
+        avg_lifespan="5 - 10 tahun",
+        growth_speed="Cepat",
+    )
+    succulent = Plant(
+        common_name="Lidah Buaya (Aloe Vera)",
+        scientific_name="Aloe barbadensis Miller",
+        plant_type="Succulent",
+        avg_lifespan="5 - 25 tahun",
+        growth_speed="Lambat",
+    )
+
+    p1 = await persist(mango)
+    p2 = await persist(vine)
+    p3 = await persist(succulent)
+
+    # Seed corresponding scans
+    s1 = LeafScan(
+        plant_id=p1.id,
+        input_source="upload",
+        location_type="Outdoor",
+        image_url="",
+        identified_name="Mangga Manis (Harum Manis)",
+        growth_duration="3-5 Tahun",
+        confidence=0.98,
+        full_analysis={
+            "scientific_name": "Mangifera indica",
+            "plant_type": "Tree",
+            "condition": "Sehat",
+            "care_tips": "Berikan pupuk organik berkala dan paparan matahari penuh.",
+            "growth_time_info": {"lifespan": "100 - 300 tahun", "growth_rate": "Sedang"},
+        },
+    )
+
+    s2 = LeafScan(
+        plant_id=p2.id,
+        input_source="upload",
+        location_type="Indoor",
+        image_url="",
+        identified_name="Sirih Gading (Heartleaf Vine)",
+        growth_duration="1-2 Tahun",
+        confidence=0.96,
+        full_analysis={
+            "scientific_name": "Epipremnum aureum",
+            "plant_type": "Vine",
+            "condition": "Sehat",
+            "care_tips": "Jaga kelembapan tanah dan berikan tiang panjat / tursus.",
+            "growth_time_info": {"lifespan": "5 - 10 tahun", "growth_rate": "Cepat"},
+        },
+    )
+
+    s3 = LeafScan(
+        plant_id=p3.id,
+        input_source="upload",
+        location_type="Outdoor",
+        image_url="",
+        identified_name="Lidah Buaya (Aloe Vera)",
+        growth_duration="2-4 Tahun",
+        confidence=0.99,
+        full_analysis={
+            "scientific_name": "Aloe barbadensis Miller",
+            "plant_type": "Succulent",
+            "condition": "Sehat",
+            "care_tips": "Siram secara berkala hanya jika media tanam sudah kering total.",
+            "growth_time_info": {"lifespan": "5 - 25 tahun", "growth_rate": "Lambat"},
+        },
+    )
+
+    await persist(s1)
+    await persist(s2)
+    await persist(s3)
+

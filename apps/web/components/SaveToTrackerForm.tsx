@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import type { PlantPublic } from "@leaflens/shared";
 import { Bookmark, CheckCircle, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 export default function SaveToTrackerForm({ scanId }: { scanId: string }) {
   const [nickname, setNickname] = useState("");
@@ -12,6 +13,7 @@ export default function SaveToTrackerForm({ scanId }: { scanId: string }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<PlantPublic | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,12 +22,15 @@ export default function SaveToTrackerForm({ scanId }: { scanId: string }) {
     try {
       const plant = await api.addPlant({
         scan_id: scanId,
- custom_nickname: nickname || "Tanaman Tanpa Nama",
+        custom_nickname: nickname || "Tanaman Tanpa Nama",
         planting_date: plantingDate || undefined,
       });
       setSaved(plant);
+      toast.success("Tanaman Tersimpan!", `${plant.common_name} berhasil ditambahkan ke tracker.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menyimpan");
+      const msg = err instanceof Error ? err.message : "Gagal menyimpan";
+      setError(msg);
+      toast.error("Gagal Menyimpan", msg);
     } finally {
       setSaving(false);
     }

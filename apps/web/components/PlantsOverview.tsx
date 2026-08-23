@@ -106,7 +106,7 @@ export default function PlantsOverview() {
                     : "border border-slate-200/80 bg-white/70 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-400 dark:hover:bg-slate-800"
                 }`}
               >
-                {cat}
+                {cat === "Semua" ? "Semua" : cat.charAt(0).toUpperCase() + cat.slice(1)}
               </button>
             ))}
           </div>
@@ -156,7 +156,7 @@ export default function PlantsOverview() {
                   )}
                 </div>
                 <span className="shrink-0 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                  {plant.plant_type || "Umum"}
+                  {plant.plant_type ? plant.plant_type.charAt(0).toUpperCase() + plant.plant_type.slice(1) : "Umum"}
                 </span>
               </div>
 

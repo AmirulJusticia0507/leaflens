@@ -16,3 +16,9 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["app"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["."]
+

@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.v1 import scan, plants, history
 from app.core.config import get_settings
-from app.core.database import create_db_and_tables
+from app.core.database import create_db_and_tables, seed_initial_data
 from app.services import ensure_storage_dir
 
 settings = get_settings()
@@ -15,8 +15,10 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_and_tables()
+    await seed_initial_data()
     ensure_storage_dir()
     yield
+
 
 
 app = FastAPI(
