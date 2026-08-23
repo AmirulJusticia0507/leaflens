@@ -21,6 +21,14 @@ Sistem pemantauan dan identifikasi tanaman berbasis AI lokal gratis menggunakan 
 - PostgreSQL >= 15
 - Ollama Server
 
+## Checklist Persiapan Environment
+
+- [x] Service PostgreSQL berjalan (`postgresql-x64-18`)
+- [x] Ollama server berjalan di `localhost:11434`
+- [x] Model reasoning `deepseek-r1:14b` sudah ter-pull
+- [ ] **`ollama pull llama3.2-vision`** ← BELUM DILAKUKAN, lanjutkan besok (±4–5 GB).
+      Wajib ada sebelum fitur scan daun; tanpa ini endpoint `/api/v1/scan` gagal dengan error 502.
+
 ## Cara Menjalankan
 
 ```bash
@@ -41,14 +49,30 @@ pnpm dev
 ## Akses dari HP
 
 Web dev server sudah di-bind ke `0.0.0.0`, jadi bisa dibuka dari HP yang satu Wi-Fi dengan PC.
+Semua panggilan API **di-proxy lewat Next.js** (rewrites `/api/v1/*` dan `/uploads/*` ke FastAPI),
+jadi tidak ada masalah CORS maupun *mixed content*.
+
+### Cara cepat (HTTP, tanpa kamera live)
 
 1. Cek IP LAN PC: `ipconfig` (misal: `10.70.193.117`).
-2. Edit `.env` (root) sebelum menjalankan `pnpm dev`:
-   - `NEXT_PUBLIC_API_BASE_URL=http://<IP-LAN>:8000`
-   - Di `apps/api/.env`: `CORS_ORIGINS=http://localhost:3000,http://<IP-LAN>:3000`
-3. Izinkan port 3000 & 8000 di Windows Firewall (Private network).
-4. Buka `http://<IP-LAN>:3000` di browser HP.
+2. Izinkan port 3000 di Windows Firewall (Private network).
+3. Jalankan `pnpm --filter @leaflens/web dev`, buka `http://<IP-LAN>:3000` di HP.
+4. Fitur **kamera live tidak jalan** via HTTP non-localhost — gunakan mode **Unggah File**.
 
-> **Catatan kamera:** API kamera HTML5 (`getUserMedia`) hanya aktif pada *secure context*.
-> Lewat `http://localhost` di PC kamera jalan normal, tapi dari HP via `http://<IP-LAN>` kamera live **terblokir browser**.
-> Solusi: pakai mode **Unggah File** di HP, atau jalankan web via HTTPS (`next dev --experimental-https`) dan percayai sertifikat self-signed di HP.
+### Mode HTTPS (kamera live dari HP)
+
+1. Generate sertifikat self-signed dengan SAN IP LAN PC kamu:
+   ```bash
+   openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
+     -keyout apps/web/certificates/localhost-key.pem \
+     -out apps/web/certificates/localhost.pem \
+     -subj "/CN=LeafLens Dev" \
+     -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:<IP-LAN>"
+   ```
+2. Jalankan: `pnpm --filter @leaflens/web dev:https`
+3. Buka `https://<IP-LAN>:3000` di HP → browser akan memperingatkan sertifikat
+   self-signed; terima/lanjutkan (*Advanced → Proceed*) agar halaman menjadi *secure context*
+   dan API kamera aktif.
+
+> Sertifikat di folder `apps/web/certificates/` sengaja di-gitignore (berisi private key).
+> Bila IP LAN berubah, regenerate sertifikatnya.

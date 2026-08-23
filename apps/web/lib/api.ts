@@ -6,7 +6,9 @@ import type {
   PlantCreate,
 } from "@leaflens/shared";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+// Default: same-origin (di-proxy oleh Next.js rewrites ke FastAPI).
+// Set NEXT_PUBLIC_API_BASE_URL hanya bila memanggil API langsung tanpa proxy.
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 async function uploadScan(
   image: Blob,
