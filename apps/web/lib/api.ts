@@ -1,4 +1,4 @@
-import type { AnalysisResult, HistoryItem, ScanResponse } from "./types";
+import type { ScanResponse, HistoryItem } from "@leaflens/shared";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -28,4 +28,4 @@ async function fetchHistory(plantId?: string): Promise<HistoryItem[]> {
 }
 
 export const api = { uploadScan, fetchHistory };
-export type { AnalysisResult, HistoryItem, ScanResponse };
+export type { ScanResponse, HistoryItem };

@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "@/lib/types";
+import type { AnalysisResult } from "@leaflens/shared";
 
 export function confidenceColor(score: number): string {
   if (score >= 0.75) return "text-leaf-primary";

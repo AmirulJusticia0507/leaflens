@@ -3,12 +3,13 @@
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
 import LeafResultCard from "@/components/LeafResultCard";
+import type { ScanResponse } from "@leaflens/shared";
 
 export default function ScanUploader() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<import("@/lib/types").ScanResponse | null>(null);
+  const [result, setResult] = useState<ScanResponse | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
