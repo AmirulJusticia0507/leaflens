@@ -1,4 +1,3 @@
-
 # LeafLens - Local AI Leaf Identification & Monitoring System
 
 Sistem pemantauan dan identifikasi tanaman berbasis AI lokal gratis menggunakan Ollama (model vision + reasoning) untuk mengenali jenis daun dan mendeteksi masalah kesehatan tanaman.
@@ -23,11 +22,11 @@ Sistem pemantauan dan identifikasi tanaman berbasis AI lokal gratis menggunakan 
 
 ## Checklist Persiapan Environment
 
-- [x] Service PostgreSQL berjalan (`postgresql-x64-18`)
-- [x] Ollama server berjalan di `localhost:11434`
-- [x] Model reasoning `deepseek-r1:14b` sudah ter-pull
+- [X] Service PostgreSQL berjalan (`postgresql-x64-18`)
+- [X] Ollama server berjalan di `localhost:11434`
+- [X] Model reasoning `deepseek-r1:14b` sudah ter-pull
 - [ ] **`ollama pull llama3.2-vision`** ← BELUM DILAKUKAN, lanjutkan besok (±4–5 GB).
-      Wajib ada sebelum fitur scan daun; tanpa ini endpoint `/api/v1/scan` gagal dengan error 502.
+  Wajib ada sebelum fitur scan daun; tanpa ini endpoint `/api/v1/scan` gagal dengan error 502.
 
 ## Cara Menjalankan
 
@@ -42,9 +41,24 @@ ollama pull deepseek-r1
 # 3. Jalankan Ollama di lokal (terminal terpisah)
 ollama serve
 
-# 4. Jalankan environment pengembangan (API & Web)
+# 4. Jalankan environment pengembangan (API & Web sekaligus)
 pnpm dev
 ```
+
+### Menjalankan Secara Manual (Terminal Terpisah)
+
+```bash
+# Terminal 1 — FastAPI Backend (port 8000)
+# Gunakan path .venv karena uvicorn tidak otomatis ada di PATH
+cd apps/api
+.venv\Scripts\uvicorn.exe main:app --reload --port 8000
+
+# Terminal 2 — Next.js Frontend (port 3002, akses dari semua IP)
+pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3002
+```
+
+> **Catatan:** Di Windows PowerShell, `uvicorn` tidak dikenali langsung karena berada di `.venv\Scripts\`.
+> Alternatif lain: aktifkan venv dulu dengan `apps/api/.venv/Scripts/Activate.ps1`, lalu jalankan `uvicorn main:app --reload --port 8000`.
 
 ## Akses dari HP
 
@@ -56,7 +70,7 @@ jadi tidak ada masalah CORS maupun *mixed content*.
 
 1. Cek IP LAN PC: `ipconfig` (misal: `10.70.193.117`).
 2. Izinkan port 3000 di Windows Firewall (Private network).
-3. Jalankan `pnpm --filter @leaflens/web dev`, buka `http://<IP-LAN>:3000` di HP.
+3. Jalankan `pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3002`, buka `http://<IP-LAN>:3002` di HP.
 4. Fitur **kamera live tidak jalan** via HTTP non-localhost — gunakan mode **Unggah File**.
 
 ### Mode HTTPS (kamera live dari HP)
@@ -69,8 +83,8 @@ jadi tidak ada masalah CORS maupun *mixed content*.
      -subj "/CN=LeafLens Dev" \
      -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:<IP-LAN>"
    ```
-2. Jalankan: `pnpm --filter @leaflens/web dev:https`
-3. Buka `https://<IP-LAN>:3000` di HP → browser akan memperingatkan sertifikat
+2. Jalankan: `pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3002`
+3. Buka `https://<IP-LAN>:3002` di HP → browser akan memperingatkan sertifikat
    self-signed; terima/lanjutkan (*Advanced → Proceed*) agar halaman menjadi *secure context*
    dan API kamera aktif.
 

@@ -1,0 +1,8 @@
+# Pyrefly configuration for LeafLens monorepo
+# Uses the project virtual environment
+python_interpreter = "apps/api/.venv/Scripts/python.exe"
+
+# Add apps/api as import root so `app.*` modules (app.core, app.models, etc.) resolve correctly
+search_path = [
+  "apps/api",
+]
