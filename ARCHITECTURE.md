@@ -1,9 +1,4 @@
 
----
-
-### 2. `ARCHITECTURE.md`
-
-```markdown
 # System Architecture
 
 ## Alur Pemrosesan Kamera / Upload Daun
@@ -17,10 +12,10 @@
 │
 ├───► [ Storage Engine ] (Simpan gambar ke disk/MinIO)
 │
-├───► [ Ollama Multimodal (Llama 3.2 Vision / Gemma 4 Vision) ]
+├───► [ Ollama Multimodal (llama3.2-vision / gemma3) ]
 │     └── Ekstrak ciri visual: warna, bentuk tulang daun, tekstur
 │
-├───► [ Ollama DeepSeek ]
+├───► [ Ollama DeepSeek-R1 ]
 │     └── Analisa spesies, masa tumbuh, syarat media tanam & estimasi umur
 │
 ▼
@@ -28,6 +23,5 @@
 
 
 ## Komponen AI lokal
-- **Vision Pre-processor (Ollama Multimodal):** Menggunakan model visual ringan di Ollama (`llama3.2-vision` / `gemma4`) untuk "membaca" bentuk fisik daun.
-- **Reasoning Engine (DeepSeek via Ollama):** Menerima ciri fisik dari model vision untuk mengidentifikasi taksonomi, durasi tumbuh (*lifespan* / *growth rate*), serta rekomendasi perawatan.
-```
+- **Vision Pre-processor (Ollama Multimodal):** Menggunakan model visual di Ollama (`llama3.2-vision` / `gemma3`) untuk "membaca" bentuk fisik daun.
+- **Reasoning Engine (DeepSeek-R1 via Ollama):** Menerima ciri fisik dari model vision untuk mengidentifikasi taksonomi, durasi tumbuh (*lifespan* / *growth rate*), serta rekomendasi perawatan.

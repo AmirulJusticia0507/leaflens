@@ -10,28 +10,28 @@
 - **Validasi:**
   - `image_file` wajib disertakan.
   - Tipe file harus berupa gambar valid (`image/jpeg`, `image/png`, `image/webp`).
-- **Expected JSON Response:**
+- **Expected JSON Response (skema kanonikal, cocok dengan GUIDELINES.md):**
   ```json
   {
     "plant_name": "Mangga Harum Manis",
     "scientific_name": "Mangifera indica",
     "plant_category": "Pohon Buah Perennial",
+    "plant_type": "tree",
     "growth_time_info": {
       "time_to_mature": "3 - 5 tahun dari bibit",
       "lifespan": "30 - 50 tahun",
       "growth_rate": "Sedang"
     },
     "leaf_characteristics": "Bentuk memanjang, ujung runcing, pertulangan menyirip jelas",
+    "care_summary": "Siram 2x seminggu, butuh sinar matahari penuh",
     "confidence_score": 0.92
   }
   ```
-- 
 
-2. Save to Tracker Form (/plants/add)
-   Inputs:
+## 2. Save to Tracker Form (`/plants/add`)
 
-scan_id: UUID (Membawa data dari hasil scan di atas).
-
-custom_nickname: String (Misal: "Mangga Belakang Rumah").
-
-planting_date: Date (Tanggal mulai ditanam jika tahu).
+- **Inputs:**
+  - `scan_id`: UUID (Membawa data dari hasil scan di atas).
+  - `custom_nickname`: String (Misal: "Mangga Belakang Rumah").
+  - `planting_date`: Date (Tanggal mulai ditanam jika tahu).
+- **Catatan:** Form ini membuat/melengkapi baris `plants` dan mengisi `leaf_scans.plant_id` (yang bersifat **nullable** saat scan awal, sebelum tanaman disimpan ke tracker).
