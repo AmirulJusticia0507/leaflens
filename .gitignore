@@ -32,3 +32,6 @@ data/
 
 # Dev TLS certificates (self-signed, jangan di-commit)
 apps/web/certificates/
+
+# Storage uploads aktual (di dalam app/) - jangan di-commit
+apps/api/app/uploads/
