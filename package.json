@@ -1,0 +1,16 @@
+{
+  "name": "leaflens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local AI Leaf Identification & Monitoring System",
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint"
+  },
+  "engines": {
+    "node": ">=18.x",
+    "pnpm": ">=8.x"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
