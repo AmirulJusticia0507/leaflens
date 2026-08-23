@@ -54,6 +54,21 @@ async def fetch_all(model: type[SQLModel], **filters) -> list[Any]:
 async def seed_initial_data() -> None:
     from app.models import LeafScan, Plant
 
+    scans = await fetch_all(LeafScan)
+    if scans:
+        # Fill image_url for existing scans if empty
+        for s in scans:
+            if not s.image_url:
+                if "Mangga" in s.identified_name:
+                    s.image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Mango_leaf_2.jpg/1280px-Mango_leaf_2.jpg"
+                    await update(s)
+                elif "Sirih" in s.identified_name:
+                    s.image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Epipremnum_aureum_31082012.jpg/1280px-Epipremnum_aureum_31082012.jpg"
+                    await update(s)
+                elif "Lidah" in s.identified_name or "Aloe" in s.identified_name:
+                    s.image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Aloe_vera_leaf.jpg/1280px-Aloe_vera_leaf.jpg"
+                    await update(s)
+
     plants = await fetch_all(Plant)
     if plants:
         return
@@ -84,12 +99,12 @@ async def seed_initial_data() -> None:
     p2 = await persist(vine)
     p3 = await persist(succulent)
 
-    # Seed corresponding scans
+    # Seed corresponding scans with realistic generated leaf images
     s1 = LeafScan(
         plant_id=p1.id,
         input_source="upload",
         location_type="Outdoor",
-        image_url="",
+        image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Mango_leaf_2.jpg/1280px-Mango_leaf_2.jpg",
         identified_name="Mangga Manis (Harum Manis)",
         growth_duration="3-5 Tahun",
         confidence=0.98,
@@ -106,7 +121,7 @@ async def seed_initial_data() -> None:
         plant_id=p2.id,
         input_source="upload",
         location_type="Indoor",
-        image_url="",
+        image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Epipremnum_aureum_31082012.jpg/1280px-Epipremnum_aureum_31082012.jpg",
         identified_name="Sirih Gading (Heartleaf Vine)",
         growth_duration="1-2 Tahun",
         confidence=0.96,
@@ -123,7 +138,7 @@ async def seed_initial_data() -> None:
         plant_id=p3.id,
         input_source="upload",
         location_type="Outdoor",
-        image_url="",
+        image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Aloe_vera_leaf.jpg/1280px-Aloe_vera_leaf.jpg",
         identified_name="Lidah Buaya (Aloe Vera)",
         growth_duration="2-4 Tahun",
         confidence=0.99,
@@ -139,4 +154,5 @@ async def seed_initial_data() -> None:
     await persist(s1)
     await persist(s2)
     await persist(s3)
+
 

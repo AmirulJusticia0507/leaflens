@@ -81,7 +81,7 @@ export default function RecentScansStream() {
               {item.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`${API_BASE}${item.image_url}`}
+                  src={item.image_url.startsWith("http") ? item.image_url : `${API_BASE}${item.image_url}`}
                   alt={item.identified_name}
                   className="h-14 w-14 shrink-0 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105"
                 />

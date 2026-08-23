@@ -47,6 +47,7 @@ DEMO_SCANS = [
         "identified_name": "Mangga Harum Manis",
         "growth_duration": "3 - 5 tahun dari bibit",
         "confidence": 0.92,
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Mango_leaf_2.jpg/1280px-Mango_leaf_2.jpg",
         "full_analysis": {
             "plant_name": "Mangga Harum Manis",
             "scientific_name": "Mangifera indica",
@@ -69,6 +70,7 @@ DEMO_SCANS = [
         "identified_name": "Sirih Gading",
         "growth_duration": "6 - 12 bulan hingga dewasa",
         "confidence": 0.87,
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Epipremnum_aureum_31082012.jpg/1280px-Epipremnum_aureum_31082012.jpg",
         "full_analysis": {
             "plant_name": "Sirih Gading",
             "scientific_name": "Epipremnum aureum",
@@ -112,7 +114,7 @@ async def seed() -> None:
                 plant_id=plants[data["plant_index"]].id,
                 input_source=data["input_source"],
                 location_type=data["location_type"],
-                image_url=f"uploads/demo/seed-{j + 1}.jpg",
+                image_url=data["image_url"],
                 identified_name=data["identified_name"],
                 growth_duration=data["growth_duration"],
                 confidence=data["confidence"],

@@ -104,7 +104,7 @@ export default function HistoryList() {
               {item.image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`${API_BASE}${item.image_url}`}
+                  src={item.image_url.startsWith("http") ? item.image_url : `${API_BASE}${item.image_url}`}
                   alt={item.identified_name}
                   className="h-20 w-20 shrink-0 rounded-xl object-cover shadow-sm transition-transform group-hover:scale-105"
                 />
