@@ -1,4 +1,5 @@
 import HistoryList from "@/components/HistoryList";
+import HealthChart from "@/components/HealthChart";
 
 export default function HistoryPage() {
   return (
@@ -7,6 +8,7 @@ export default function HistoryPage() {
       <p className="text-sm opacity-70">
         Timeline pemantauan perkembangan daun dari waktu ke waktu.
       </p>
+      <HealthChart />
       <HistoryList />
     </section>
   );

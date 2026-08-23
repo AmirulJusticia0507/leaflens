@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PlantsOverview from "@/components/PlantsOverview";
+import HealthChart from "@/components/HealthChart";
 
 export default function DashboardPage() {
   return (
@@ -15,6 +16,11 @@ export default function DashboardPage() {
         >
           Mulai Scan Daun
         </Link>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Grafik Kesehatan Bulanan</h2>
+        <HealthChart />
       </div>
 
       <div className="space-y-3">

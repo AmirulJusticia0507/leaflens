@@ -3,7 +3,8 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from sqlmodel import SQLModel, create_async_engine, select
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import get_settings
@@ -30,6 +31,14 @@ async def persist(model: SQLModel) -> Any:
         await session.commit()
         await session.refresh(model)
         return model
+
+
+async def update(model: SQLModel) -> Any:
+    """Update baris yang sudah ada berdasarkan primary key (merge)."""
+    async with AsyncSession(engine) as session:
+        merged = await session.merge(model)
+        await session.commit()
+        return merged
 
 
 async def fetch_all(model: type[SQLModel], **filters) -> list[Any]:

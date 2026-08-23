@@ -48,3 +48,9 @@ class HistoryItem(BaseModel):
     confidence: float
     image_url: str
     scanned_at: str
+
+
+class MonthlyHealthPoint(BaseModel):
+    month: str = Field(..., description="Bulan dalam format YYYY-MM")
+    scan_count: int
+    avg_confidence: float | None = None

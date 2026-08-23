@@ -1,6 +1,7 @@
 import type {
   ScanResponse,
   HistoryItem,
+  MonthlyHealthPoint,
   PlantPublic,
   PlantCreate,
 } from "@leaflens/shared";
@@ -32,6 +33,17 @@ async function fetchHistory(plantId?: string): Promise<HistoryItem[]> {
   return res.json();
 }
 
+async function fetchMonthlyHealth(
+  plantId?: string,
+  months = 12
+): Promise<MonthlyHealthPoint[]> {
+  const params = new URLSearchParams({ months: String(months) });
+  if (plantId) params.set("plant_id", plantId);
+  const res = await fetch(`${API_BASE}/api/v1/history/monthly-health?${params}`);
+  if (!res.ok) throw new Error(`Grafik kesehatan gagal: ${res.status}`);
+  return res.json();
+}
+
 async function addPlant(payload: PlantCreate): Promise<PlantPublic> {
   const res = await fetch(`${API_BASE}/api/v1/plants`, {
     method: "POST",
@@ -48,6 +60,6 @@ async function fetchPlants(): Promise<PlantPublic[]> {
   return res.json();
 }
 
-export const api = { uploadScan, fetchHistory, addPlant, fetchPlants };
+export const api = { uploadScan, fetchHistory, fetchMonthlyHealth, addPlant, fetchPlants };
 export { API_BASE };
-export type { ScanResponse, HistoryItem, PlantPublic, PlantCreate };
+export type { ScanResponse, HistoryItem, MonthlyHealthPoint, PlantPublic, PlantCreate };

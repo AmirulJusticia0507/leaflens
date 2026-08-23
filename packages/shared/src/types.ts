@@ -36,6 +36,12 @@ export interface HistoryItem {
   scanned_at: string;
 }
 
+export interface MonthlyHealthPoint {
+  month: string;
+  scan_count: number;
+  avg_confidence: number | null;
+}
+
 export interface PlantCreate {
   scan_id: string;
   custom_nickname: string;

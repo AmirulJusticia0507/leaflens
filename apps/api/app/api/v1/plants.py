@@ -2,13 +2,20 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, HTTPException, JSONResponse
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 
 from app.core import database
 from app.models import LeafScan, Plant
 from app.schemas import PlantCreate, PlantPublic
 
 router = APIRouter()
+
+
+def _to_public(p: Plant) -> PlantPublic:
+    data = p.model_dump()
+    data["id"] = str(data["id"])
+    return PlantPublic(**data)
 
 
 @router.post("/plants", response_model=PlantPublic, status_code=201)
@@ -29,15 +36,15 @@ async def add_plant(payload: PlantCreate):
     await database.persist(plant)
 
     scan.plant_id = plant.id
-    await database.persist(scan)
+    await database.update(scan)
 
-    return PlantPublic(**plant.model_dump())
+    return _to_public(plant)
 
 
 @router.get("/plants", response_model=list[PlantPublic])
 async def list_plants():
     plants = await database.fetch_all(Plant)
-    return [PlantPublic(**p.model_dump()) for p in plants]
+    return [_to_public(p) for p in plants]
 
 
 @router.get("/plants/{plant_id}", response_model=PlantPublic)
@@ -45,4 +52,4 @@ async def get_plant(plant_id: str):
     plants = await database.fetch_all(Plant, id=uuid.UUID(plant_id))
     if not plants:
         raise HTTPException(status_code=404, detail="Plant tidak ditemukan")
-    return PlantPublic(**plants[0].model_dump())
+    return _to_public(plants[0])
