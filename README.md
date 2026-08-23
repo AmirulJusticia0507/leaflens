@@ -37,3 +37,18 @@ ollama serve
 # 4. Jalankan environment pengembangan (API & Web)
 pnpm dev
 ```
+
+## Akses dari HP
+
+Web dev server sudah di-bind ke `0.0.0.0`, jadi bisa dibuka dari HP yang satu Wi-Fi dengan PC.
+
+1. Cek IP LAN PC: `ipconfig` (misal: `10.70.193.117`).
+2. Edit `.env` (root) sebelum menjalankan `pnpm dev`:
+   - `NEXT_PUBLIC_API_BASE_URL=http://<IP-LAN>:8000`
+   - Di `apps/api/.env`: `CORS_ORIGINS=http://localhost:3000,http://<IP-LAN>:3000`
+3. Izinkan port 3000 & 8000 di Windows Firewall (Private network).
+4. Buka `http://<IP-LAN>:3000` di browser HP.
+
+> **Catatan kamera:** API kamera HTML5 (`getUserMedia`) hanya aktif pada *secure context*.
+> Lewat `http://localhost` di PC kamera jalan normal, tapi dari HP via `http://<IP-LAN>` kamera live **terblokir browser**.
+> Solusi: pakai mode **Unggah File** di HP, atau jalankan web via HTTPS (`next dev --experimental-https`) dan percayai sertifikat self-signed di HP.
