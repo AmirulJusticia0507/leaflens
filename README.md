@@ -34,12 +34,16 @@ Sistem pemantauan dan identifikasi tanaman berbasis AI lokal gratis menggunakan 
 
 ## Checklist Environment
 
-- [X] PostgreSQL berjalan
-- [X] Ollama `http://localhost:11434` berjalan
-- [X] `deepseek-r1` & `llava` ter-pull (fallback `moondream` 1.7GB juga siap)
-- [ ] `llama3.2-vision` — gagal di 0.32–0.33 (`unknown architecture: 'mllama'`), gunakan `llava`/`moondream` sementara
+- [X] PostgreSQL berjalan (`postgresql-x64-18` + DB `leaflens`)
+- [X] Ollama `http://localhost:11434` berjalan — **v0.33.0** (fix `mllama`)
+- [X] `deepseek-r1` (5.2GB) & `llava` (4.7GB) ter-pull — vision utama
+- [X] Fallback `moondream` (1.7GB) siap
+- [X] `llama3.2-vision` (7.8GB) ter-pull — *opsional, masih error `mllama` di 0.33, pakai `llava`*
+- [X] PWA assets: `public/icons/*`, `sw.js`, `offline.html`, `manifest.webmanifest`
+- [X] DB migrated: kolom `leaf_scans.latitude`/`longitude` + `health_status`/`treatment_steps`
+- [X] Beekeeper Studio terkoneksi (`leaflens:leaflens@localhost:5432/leaflens`)
 
-> Catatan: `llama3.2-vision` butuh build Ollama dengan dukungan `mllama`. Jika masih error, tetap pakai `llava` (sudah dikonfigurasi di `.env`).
+> `llama3.2-vision` tetap opsional — `.env` sekarang pakai `llava` (sudah terverifikasi end-to-end).
 
 ## Cara Menjalankan (1 terminal)
 
