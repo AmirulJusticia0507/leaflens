@@ -1,92 +1,144 @@
-# LeafLens - Local AI Leaf Identification & Monitoring System
+# LeafLens — Local AI Leaf Identification & Monitoring System
 
-Sistem pemantauan dan identifikasi tanaman berbasis AI lokal gratis menggunakan Ollama (model vision + reasoning) untuk mengenali jenis daun dan mendeteksi masalah kesehatan tanaman.
+Sistem pemantauan dan identifikasi tanaman berbasis AI lokal gratis menggunakan Ollama (vision + reasoning) untuk mengenali jenis daun, mendeteksi masalah kesehatan, dan memberi rekomendasi penanganan — 100% privat, diproses di perangkat sendiri tanpa upload ke cloud.
+
+## ✨ Fitur Utama
+
+- **Identifikasi Vision AI** — Foto daun → nama tanaman, ilmiah, kategori, ciri daun
+- **Rekomendasi Penanganan** — `health_status` + `treatment_steps` (3–5 langkah konkret, mis. bercak bakteri)
+- **Hybrid Verification** — Vision (`llava`/`moondream`) + cross-check `deepseek-r1` untuk koreksi nama & kalibrasi confidence
+- **GPS Tagging** — Toggle otomatis ambil koordinat, link Google Maps, simpan `latitude`/`longitude` per scan
+- **PWA Offline** — Installable (manifest + icon), service worker cache shell/API/assets, halaman `offline.html`, riwayat tetap bisa dibuka offline
+- **Offline Queue** — Scan saat offline diantrekan di IndexedDB, auto-sync saat online kembali
+- **Database 50+ Tanaman Indonesia** — Halaman `/plants` searchable (padi, mangga, cabai, anggrek, dll.), data lokal
+- **Monitoring** — Grafik kesehatan bulanan, riwayat, tracker tanaman
+- **Privasi** — Cookie popup (sessionStorage untuk *Nanti*, localStorage untuk *Setuju*)
 
 ## Tech Stack
 
-- **Monorepo Manager:** PNPM Workspaces
-- **Frontend:** Next.js 14+ (App Router, TailwindCSS, TypeScript)
-- **Backend:** Python FastAPI + Pydantic v2
-- **AI Inference Engine:** Ollama
-  - **Vision / Multimodal:** `llama3.2-vision` (alternatif: `deepseek-janus`, `gemma3`)
-  - **Reasoning:** `deepseek-r1`
-- **Database:** PostgreSQL + AsyncPG / SQLModel
-- **Storage:** Local Storage / MinIO (Foto Daun)
+- **Monorepo:** PNPM Workspaces
+- **Frontend:** Next.js 14 (App Router), TailwindCSS, TypeScript, Framer Motion
+- **Backend:** Python FastAPI + Pydantic v2 + SQLModel (AsyncPG)
+- **AI:** Ollama — Vision `llava` (fallback `moondream`, `llama3.2-vision` butuh Ollama ≥0.33), Reasoning `deepseek-r1`
+- **DB:** PostgreSQL 15+ (Neon/Postgres lokal)
+- **Storage:** Local `uploads/` + StaticFiles `/uploads`
+- **PWA:** `manifest.ts`, `sw.js` (stale-while-revalidate + network-first), `offline.html`
+- **Offline Queue:** IndexedDB (`leaflens-offline`)
 
-## Prasyarat System
+## Prasyarat
 
-- Node.js >= 18.x
-- Python >= 3.10
-- PostgreSQL >= 15
-- Ollama Server
+- Node.js ≥18, PNPM ≥8
+- Python ≥3.10 (venv di `apps/api/.venv`)
+- PostgreSQL ≥15
+- Ollama ≥0.33.0 (`ollama --version`)
 
-## Checklist Persiapan Environment
+## Checklist Environment
 
-- [X] Service PostgreSQL berjalan (`postgresql-x64-18`)
-- [X] Ollama server berjalan di `localhost:11434`
-- [X] Model reasoning `deepseek-r1:14b` sudah ter-pull
-- [ ] **`ollama pull llama3.2-vision`** ← BELUM DILAKUKAN, lanjutkan besok (±4–5 GB).
-  Wajib ada sebelum fitur scan daun; tanpa ini endpoint `/api/v1/scan` gagal dengan error 502.
+- [X] PostgreSQL berjalan
+- [X] Ollama `http://localhost:11434` berjalan
+- [X] `deepseek-r1` & `llava` ter-pull (fallback `moondream` 1.7GB juga siap)
+- [ ] `llama3.2-vision` — gagal di 0.32–0.33 (`unknown architecture: 'mllama'`), gunakan `llava`/`moondream` sementara
 
-## Cara Menjalankan
+> Catatan: `llama3.2-vision` butuh build Ollama dengan dukungan `mllama`. Jika masih error, tetap pakai `llava` (sudah dikonfigurasi di `.env`).
+
+## Cara Menjalankan (1 terminal)
 
 ```bash
-# 1. Install semua dependensi
 pnpm install
+ollama pull llava          # vision utama (4.7GB)
+ollama pull deepseek-r1    # reasoning (5.2GB)
+# fallback ringan jika perlu: ollama pull moondream
 
-# 2. Siapkan model Ollama (vision + reasoning)
-ollama pull llama3.2-vision
-ollama pull deepseek-r1
-
-# 3. Jalankan Ollama di lokal (terminal terpisah)
-ollama serve
-
-# 4. Jalankan environment pengembangan (API & Web sekaligus)
 pnpm dev
+# Web: http://localhost:3000  (PWA installable)
+# API: http://localhost:8000  (docs: /docs, health: /health)
 ```
 
-### Menjalankan Secara Manual (Terminal Terpisah)
+`pnpm dev` menjalankan **keduanya** paralel (`apps/web` + `apps/api` via `.venv\Scripts\python.exe -m uvicorn` — sudah di-fix agar tidak perlu aktivasi venv manual).
+
+### Manual (2 terminal)
 
 ```bash
-# Terminal 1 — FastAPI Backend (port 8000)
-# Gunakan path .venv karena uvicorn tidak otomatis ada di PATH
+# Terminal 1 — API
 cd apps/api
-.venv\Scripts\uvicorn.exe main:app --reload --port 8000
+.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8000
 
-# Terminal 2 — Next.js Frontend (port 3002, akses dari semua IP)
-pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3002
+# Terminal 2 — Web
+pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3000
+# atau port custom: -p 3002
 ```
 
-> **Catatan:** Di Windows PowerShell, `uvicorn` tidak dikenali langsung karena berada di `.venv\Scripts\`.
-> Alternatif lain: aktifkan venv dulu dengan `apps/api/.venv/Scripts/Activate.ps1`, lalu jalankan `uvicorn main:app --reload --port 8000`.
+## Endpoint Penting
 
-## Akses dari HP
+- `POST /api/v1/scan` — multipart `image_file` + `location_type` + `latitude`/`longitude` → `ScanResponse` (termasuk `health_status`, `treatment_steps`)
+- `GET /api/v1/history` — list riwayat (sekarang dengan `latitude`, `longitude`, `health_status`)
+- `GET /api/v1/history/monthly-health?months=12`
+- `GET /api/v1/plants`
+- `GET /uploads/{file}` — static foto
+- `GET /health` — cek API
+- `GET /manifest.webmanifest` — PWA manifest
+- `GET /sw.js` — service worker
 
-Web dev server sudah di-bind ke `0.0.0.0`, jadi bisa dibuka dari HP yang satu Wi-Fi dengan PC.
-Semua panggilan API **di-proxy lewat Next.js** (rewrites `/api/v1/*` dan `/uploads/*` ke FastAPI),
-jadi tidak ada masalah CORS maupun *mixed content*.
+## PWA & Offline
 
-### Cara cepat (HTTP, tanpa kamera live)
+- Install: buka `http://localhost:3000` di Chrome/Edge → banner *Install LeafLens* (komponen `InstallPrompt`) atau menu *Install app*
+- Offline: halaman yang pernah dibuka + `GET /api/v1/*` di-cache; halaman baru yang belum di-cache → `offline.html`
+- Antrean: jika scan saat offline, disimpan di IndexedDB dan tombol *Sinkronkan* muncul di `ScanUploader`
 
-1. Cek IP LAN PC: `ipconfig` (misal: `10.70.193.117`).
-2. Izinkan port 3000 di Windows Firewall (Private network).
-3. Jalankan `pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3002`, buka `http://<IP-LAN>:3002` di HP.
-4. Fitur **kamera live tidak jalan** via HTTP non-localhost — gunakan mode **Unggah File**.
+## GPS
 
-### Mode HTTPS (kamera live dari HP)
+Aktifkan toggle *Tag Lokasi GPS Otomatis* di halaman Scan. Browser akan minta izin lokasi → koordinat tampil dengan link Maps → terkirim bersama scan.
 
-1. Generate sertifikat self-signed dengan SAN IP LAN PC kamu:
-   ```bash
-   openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
-     -keyout apps/web/certificates/localhost-key.pem \
-     -out apps/web/certificates/localhost.pem \
-     -subj "/CN=LeafLens Dev" \
-     -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:<IP-LAN>"
-   ```
-2. Jalankan: `pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3002`
-3. Buka `https://<IP-LAN>:3002` di HP → browser akan memperingatkan sertifikat
-   self-signed; terima/lanjutkan (*Advanced → Proceed*) agar halaman menjadi *secure context*
-   dan API kamera aktif.
+## Database Tanaman
 
-> Sertifikat di folder `apps/web/certificates/` sengaja di-gitignore (berisi private key).
-> Bila IP LAN berubah, regenerate sertifikatnya.
+Buka `/plants` — 50 entri `INDONESIAN_PLANTS` (`packages/shared/src/indonesian-plants.ts`), pencarian client-side (nama/ilmiah/kategori), filter kategori. Data bisa dipakai sebagai fallback jika vision confidence rendah.
+
+## Konfigurasi Ollama
+
+`apps/api/.env`:
+
+```
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_VISION_MODEL=llava          # atau moondream / llama3.2-vision
+OLLAMA_REASONING_MODEL=deepseek-r1
+```
+
+Ganti model tanpa restart DB — cukup ubah `.env` dan restart `pnpm dev`. Hybrid verification aktif otomatis saat `confidence <0.85`.
+
+## Akses dari HP (1 Wi-Fi)
+
+Next.js sudah `0.0.0.0` + rewrites `/api` → tidak ada CORS.
+
+```bash
+ipconfig  # cari IPv4, mis. 10.70.193.117
+# Izinkan port 3000 di Firewall (Private)
+# Buka http://10.70.193.117:3000 di HP
+```
+
+Kamera live butuh HTTPS (secure context). Generate self-signed:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
+  -keyout apps/web/certificates/localhost-key.pem \
+  -out apps/web/certificates/localhost.pem \
+  -subj "/CN=LeafLens Dev" \
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:10.70.193.117"
+
+pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3000
+# buka https://10.70.193.117:3000 → Advanced → Proceed
+```
+
+## Troubleshooting
+
+- `uvicorn is not recognized` → sudah di-fix di `package.json` (`".venv\\Scripts\\python.exe -m uvicorn"`), cukup `pnpm dev`
+- Port 3000/8000 rebutan (`EADDRINUSE`, `muter-muter`) → `netstat -ano | findstr :3000` lalu `taskkill /F /PID <id>`
+- `unknown model architecture: 'mllama'` → update Ollama ke 0.33+ atau pakai `llava`/`moondream`
+- Ollama timeout 2m → `app/core/ollama.py` sudah `timeout=300` + `num_predict=400`
+
+## Struktur
+
+```
+apps/api/app/{api/v1,core,models,schemas,services}
+apps/web/{app,components,lib,public/{icons,sw.js,offline.html}}
+packages/shared/src/{types,indonesian-plants}
+```
