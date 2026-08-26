@@ -13,14 +13,12 @@ RUN pnpm install --frozen-lockfile
 # ---- Builder ----
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps ./apps
 COPY packages ./packages
 WORKDIR /app/apps/web
-RUN echo "=== DEBUG ===" && pwd && ls -la node_modules/.bin/ | head -n 20 && pnpm build
-WORKDIR /app
+RUN pnpm install --frozen-lockfile --prod=false
+RUN pnpm build
 
 # ---- Runner ----
 FROM node:20-alpine AS runner
