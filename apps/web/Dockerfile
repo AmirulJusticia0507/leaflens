@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 
 # ---- Builder ----
 FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app ./
 COPY . .
 RUN pnpm --filter @leaflens/web build
 
