@@ -107,14 +107,14 @@ postgresql+asyncpg://leaflens:leaflens@localhost:5432/leaflens
 
 **Beekeeper Studio → New Connection → Postgres:**
 
-| Field    | Nilai        |
-|----------|--------------|
-| Host     | `localhost`  |
-| Port     | `5432`       |
-| Database | `leaflens`   |
-| Username | `leaflens`   |
-| Password | `leaflens`   |
-| SSL      | Off          |
+| Field    | Nilai         |
+| -------- | ------------- |
+| Host     | `localhost` |
+| Port     | `5432`      |
+| Database | `leaflens`  |
+| Username | `leaflens`  |
+| Password | `leaflens`  |
+| SSL      | Off           |
 
 Klik *Test* → *Connect*. Tabel utama: `plants` dan `leaf_scans` (kolom `latitude`/`longitude`/`full_analysis` berisi `health_status` & `treatment_steps`).
 
@@ -179,6 +179,7 @@ C:\laragon\bin\cloudflared\cloudflared.exe tunnel --url http://localhost:8000
 ```
 
 > **Catatan:**
+>
 > - URL `trycloudflare.com` acak dan sementara (ganti tiap run) — cocok untuk demo, bukan produksi.
 > - Jika frontend diakses via URL publik tapi `NEXT_PUBLIC_API_BASE_URL` masih `http://localhost:8000`, browser di HP/orang lain akan gagal (mencoba `localhost` milik device mereka). Untuk demo publik: set di `apps/api/.env` → `NEXT_PUBLIC_API_BASE_URL=https://<url-api-publik>` dan tambahkan origin web ke `CORS_ORIGINS` (mis. `https://xxxx.trycloudflare.com`), lalu restart `pnpm dev`.
 > - Untuk akses HP 1 Wi-Fi saja, tidak perlu Cloudflare — cukup pakai `http://<IP-LAN>:3000` (bagian sebelumnya).
