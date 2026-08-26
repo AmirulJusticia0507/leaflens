@@ -18,8 +18,9 @@ COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_module
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps ./apps
 COPY packages ./packages
-ENV NODE_ENV=production
-RUN pnpm --filter @leaflens/web build
+WORKDIR /app/apps/web
+RUN pnpm build
+WORKDIR /app
 
 # ---- Runner ----
 FROM node:20-alpine AS runner
