@@ -13,11 +13,20 @@ settings = get_settings()
 engine = create_async_engine(settings.database_url, echo=False, future=True)
 
 
+# Migrasi ringan: tambah kolom baru tanpa menghapus data yang sudah ada.
+LIGHTWEIGHT_MIGRATIONS = [
+    "ALTER TABLE leaf_scans ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION",
+    "ALTER TABLE leaf_scans ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION",
+]
+
+
 async def create_db_and_tables() -> None:
     import app.models  # noqa: F401  (register models)
 
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        for statement in LIGHTWEIGHT_MIGRATIONS:
+            await conn.exec_driver_sql(statement)
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
@@ -104,6 +113,8 @@ async def seed_initial_data() -> None:
         plant_id=p1.id,
         input_source="upload",
         location_type="Outdoor",
+        latitude=-6.2088,
+        longitude=106.8456,
         image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Mango_leaf_2.jpg/1280px-Mango_leaf_2.jpg",
         identified_name="Mangga Manis (Harum Manis)",
         growth_duration="3-5 Tahun",
@@ -113,6 +124,11 @@ async def seed_initial_data() -> None:
             "plant_type": "Tree",
             "condition": "Sehat",
             "care_tips": "Berikan pupuk organik berkala dan paparan matahari penuh.",
+            "health_status": "Sehat",
+            "treatment_steps": [
+                "Pertahankan paparan matahari penuh minimal 6 jam per hari",
+                "Aplikasi pupuk organik setiap 2 bulan",
+            ],
             "growth_time_info": {"lifespan": "100 - 300 tahun", "growth_rate": "Sedang"},
         },
     )
@@ -121,6 +137,8 @@ async def seed_initial_data() -> None:
         plant_id=p2.id,
         input_source="upload",
         location_type="Indoor",
+        latitude=-6.1751,
+        longitude=106.8272,
         image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Epipremnum_aureum_31082012.jpg/1280px-Epipremnum_aureum_31082012.jpg",
         identified_name="Sirih Gading (Heartleaf Vine)",
         growth_duration="1-2 Tahun",
@@ -130,6 +148,11 @@ async def seed_initial_data() -> None:
             "plant_type": "Vine",
             "condition": "Sehat",
             "care_tips": "Jaga kelembapan tanah dan berikan tiang panjat / tursus.",
+            "health_status": "Sehat",
+            "treatment_steps": [
+                "Siram hanya saat permukaan media tanam kering",
+                "Bersihkan daun dari debu agar fotosintesis optimal",
+            ],
             "growth_time_info": {"lifespan": "5 - 10 tahun", "growth_rate": "Cepat"},
         },
     )
@@ -138,6 +161,8 @@ async def seed_initial_data() -> None:
         plant_id=p3.id,
         input_source="upload",
         location_type="Outdoor",
+        latitude=-6.3018,
+        longitude=106.6529,
         image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Aloe_vera_leaf.jpg/1280px-Aloe_vera_leaf.jpg",
         identified_name="Lidah Buaya (Aloe Vera)",
         growth_duration="2-4 Tahun",
@@ -147,6 +172,11 @@ async def seed_initial_data() -> None:
             "plant_type": "Succulent",
             "condition": "Sehat",
             "care_tips": "Siram secara berkala hanya jika media tanam sudah kering total.",
+            "health_status": "Sehat",
+            "treatment_steps": [
+                "Gunakan pot dengan drainase baik",
+                "Hindari genangan air di pangkal daun",
+            ],
             "growth_time_info": {"lifespan": "5 - 25 tahun", "growth_rate": "Lambat"},
         },
     )

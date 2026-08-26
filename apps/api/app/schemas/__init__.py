@@ -19,6 +19,14 @@ class AnalysisResult(BaseModel):
     growth_time_info: GrowthTimeInfo
     leaf_characteristics: str
     care_summary: str
+    health_status: str | None = Field(
+        default=None,
+        description="Kondisi daun/tanaman, misal: Sehat | Kurang Air | Sakit",
+    )
+    treatment_steps: list[str] = Field(
+        default_factory=list,
+        description="Langkah penanganan konkret bila tanaman tidak sehat",
+    )
     confidence_score: float = Field(..., ge=0.0, le=1.0)
 
 
@@ -48,6 +56,10 @@ class HistoryItem(BaseModel):
     confidence: float
     image_url: str
     scanned_at: str
+    location_type: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    health_status: str | None = None
 
 
 class MonthlyHealthPoint(BaseModel):

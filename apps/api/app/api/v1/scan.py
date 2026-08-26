@@ -35,6 +35,8 @@ async def scan_leaf(
     image_file: UploadFile = File(...),
     source_type: str = Form("upload"),
     location_type: str | None = Form(None),
+    latitude: float | None = Form(None),
+    longitude: float | None = Form(None),
 ):
     contents = await image_file.read()
 
@@ -44,6 +46,10 @@ async def scan_leaf(
         raise HTTPException(status_code=415, detail="Tipe file harus JPG/PNG/WEBP")
     if location_type not in (None, "", "Indoor", "Outdoor", "Liar/Hutan"):
         raise HTTPException(status_code=422, detail="location_type tidak valid")
+    if latitude is not None and not -90.0 <= latitude <= 90.0:
+        raise HTTPException(status_code=422, detail="latitude harus di antara -90 dan 90")
+    if longitude is not None and not -180.0 <= longitude <= 180.0:
+        raise HTTPException(status_code=422, detail="longitude harus di antara -180 dan 180")
 
     image_url = _save_image(contents, image_file.content_type)
 
@@ -60,6 +66,8 @@ async def scan_leaf(
         plant_id=None,
         input_source="camera_capture" if source_type == "camera" else "file_upload",
         location_type=location_type or None,
+        latitude=latitude,
+        longitude=longitude,
         image_url=image_url,
         identified_name=analysis.plant_name,
         growth_duration=analysis.growth_time_info.time_to_mature,

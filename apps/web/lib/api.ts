@@ -13,12 +13,17 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 async function uploadScan(
   image: Blob,
   sourceType: "camera" | "upload",
-  locationType?: string
+  locationType?: string,
+  coords?: { latitude: number; longitude: number }
 ): Promise<ScanResponse> {
   const form = new FormData();
   form.append("image_file", image);
   form.append("source_type", sourceType);
   if (locationType) form.append("location_type", locationType);
+  if (coords) {
+    form.append("latitude", String(coords.latitude));
+    form.append("longitude", String(coords.longitude));
+  }
 
   const res = await fetch(`${API_BASE}/api/v1/scan`, {
     method: "POST",

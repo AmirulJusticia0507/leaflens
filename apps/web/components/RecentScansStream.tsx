@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, API_BASE } from "@/lib/api";
 import type { HistoryItem } from "@leaflens/shared";
-import { History, ArrowRight, ShieldCheck, AlertCircle, Sparkles } from "lucide-react";
+import { History, ArrowRight, ShieldCheck, AlertCircle, Sparkles, MapPin } from "lucide-react";
 import Link from "next/link";
 
 function formatDate(iso: string): string {
@@ -98,7 +98,7 @@ export default function RecentScansStream() {
                 <p className="mt-0.5 text-[10px] font-medium text-slate-400">
                   {formatDate(item.scanned_at)}
                 </p>
-                <div className="mt-1.5 flex items-center gap-1 text-[11px]">
+                <div className="mt-1.5 flex flex-wrap items-center gap-1 text-[11px]">
                   {isHealthy ? (
                     <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
                       <ShieldCheck className="h-3 w-3" /> {confidence}% Akurat
@@ -107,6 +107,17 @@ export default function RecentScansStream() {
                     <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
                       <AlertCircle className="h-3 w-3" /> {confidence}% Confidence
                     </span>
+                  )}
+                  {item.latitude != null && item.longitude != null && (
+                    <a
+                      href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={`${item.latitude.toFixed(5)}, ${item.longitude.toFixed(5)}`}
+                      className="inline-flex items-center gap-0.5 rounded-md bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold text-sky-600 transition-colors hover:bg-sky-500/20 dark:text-sky-400"
+                    >
+                      <MapPin className="h-3 w-3" /> GPS
+                    </a>
                   )}
                 </div>
               </div>

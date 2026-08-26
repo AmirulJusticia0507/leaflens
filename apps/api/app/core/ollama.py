@@ -17,11 +17,12 @@ async def ollama_generate(model: str, prompt: str, images: list[str] | None = No
         "prompt": prompt,
         "stream": False,
         "format": "json",
+        "options": {"num_predict": 400, "temperature": 0.2, "num_ctx": 4096},
     }
     if images:
         payload["images"] = images
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=300.0) as client:
         resp = await client.post(f"{settings.ollama_base_url}/api/generate", json=payload)
         resp.raise_for_status()
         data = resp.json()

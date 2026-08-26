@@ -34,6 +34,8 @@ class LeafScan(SQLModel, table=True):
     plant_id: uuid.UUID | None = Field(default=None, foreign_key="plants.id")
     input_source: str = Field(max_length=20)
     location_type: str | None = Field(default=None, max_length=20)
+    latitude: float | None = Field(default=None, sa_column=Column(Float, nullable=True))
+    longitude: float | None = Field(default=None, sa_column=Column(Float, nullable=True))
     image_url: str = Field(sa_column=Column(Text, nullable=False))
     identified_name: str = Field(max_length=200)
     growth_duration: str = Field(max_length=100)

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, API_BASE } from "@/lib/api";
 import type { HistoryItem } from "@leaflens/shared";
-import { Calendar, ShieldCheck, AlertTriangle, AlertCircle, Camera } from "lucide-react";
+import { Calendar, ShieldCheck, AlertTriangle, AlertCircle, Camera, MapPin } from "lucide-react";
 import Link from "next/link";
 
 function formatDate(iso: string): string {
@@ -143,7 +143,7 @@ export default function HistoryList() {
                   </div>
                 </div>
 
-                <div className="pt-1">
+                <div className="pt-1 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                   {isHealthy ? (
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                       <ShieldCheck className="h-3.5 w-3.5" /> Hasil Identifikasi Akurat
@@ -156,6 +156,32 @@ export default function HistoryList() {
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500">
                       <AlertCircle className="h-3.5 w-3.5" /> Foto Kurang Jelas / Sampel Rendah
                     </span>
+                  )}
+
+                  {item.health_status && (
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        item.health_status.toLowerCase().includes("sehat") &&
+                        !item.health_status.toLowerCase().includes("sakit")
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                      }`}
+                    >
+                      {item.health_status}
+                    </span>
+                  )}
+
+                  {item.latitude != null && item.longitude != null && (
+                    <a
+                      href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={`${item.latitude.toFixed(5)}, ${item.longitude.toFixed(5)}`}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400"
+                    >
+                      <MapPin className="h-3.5 w-3.5" />
+                      {item.location_type ? `${item.location_type} · ` : ""}Lihat Lokasi
+                    </a>
                   )}
                 </div>
               </div>

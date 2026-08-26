@@ -42,6 +42,10 @@ async def scan_history(plant_id: str | None = None):
             confidence=s.confidence,
             image_url=s.image_url,
             scanned_at=s.scanned_at.isoformat(),
+            location_type=s.location_type,
+            latitude=s.latitude,
+            longitude=s.longitude,
+            health_status=(s.full_analysis or {}).get("health_status"),
         )
         for s in sorted(scans, key=lambda x: x.scanned_at, reverse=True)
     ]

@@ -20,6 +20,8 @@ export interface AnalysisResult {
   growth_time_info: GrowthTimeInfo;
   leaf_characteristics: string;
   care_summary: string;
+  health_status?: string | null;
+  treatment_steps?: string[];
   confidence_score: number;
 }
 
@@ -34,6 +36,10 @@ export interface HistoryItem {
   confidence: number;
   image_url: string;
   scanned_at: string;
+  location_type?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  health_status?: string | null;
 }
 
 export interface MonthlyHealthPoint {

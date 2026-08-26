@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 
 import ThemeToggle from "@/components/ThemeToggle";
@@ -8,11 +8,22 @@ import NavigationLinks from "@/components/NavigationLinks";
 import MobileMenu from "@/components/MobileMenu";
 import PageTransition from "@/components/PageTransition";
 import { ToastProvider } from "@/components/ToastProvider";
+import CookiePopup from "@/components/CookiePopup";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 
 export const metadata: Metadata = {
   title: "LeafLens — AI Plant Identification & Health Monitoring",
   description: "Local AI Leaf Identification & Monitoring System",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#059669",
 };
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem('leaflens-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`;
@@ -83,6 +94,8 @@ export default function RootLayout({
             </div>
           </footer>
         </ToastProvider>
+        <CookiePopup />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

@@ -5,9 +5,23 @@ import { api } from "@/lib/api";
 import LeafResultCard from "@/components/LeafResultCard";
 import SaveToTrackerForm from "@/components/SaveToTrackerForm";
 import type { ScanResponse } from "@leaflens/shared";
-import { Camera, Upload, MapPin, StopCircle, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { Camera, Upload, MapPin, StopCircle, Sparkles, AlertCircle, RefreshCw, Navigation } from "lucide-react";
 
 const LOCATION_TYPES = ["Indoor", "Outdoor", "Liar/Hutan"];
+
+function getPosition(timeoutMs = 8000): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!("geolocation" in navigator)) {
+      reject(new Error("Perangkat tidak mendukung GPS."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: timeoutMs,
+      maximumAge: 60_000,
+    });
+  });
+}
 
 export default function ScanUploader() {
   const [preview, setPreview] = useState<string | null>(null);
@@ -18,6 +32,45 @@ export default function ScanUploader() {
   const [cameraOn, setCameraOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // --- GPS Tagging ---
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
+  async function acquirePosition(): Promise<{ latitude: number; longitude: number } | null> {
+    if (gpsCoords) return gpsCoords;
+    setGpsStatus("loading");
+    try {
+      const pos = await getPosition();
+      const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+      setGpsCoords(coords);
+      setGpsStatus("ok");
+      setGpsError(null);
+      return coords;
+    } catch (e) {
+      setGpsStatus("error");
+      setGpsError(
+        e instanceof GeolocationPositionError && e.code === e.PERMISSION_DENIED
+          ? "Izin lokasi ditolak — scan dikirim tanpa koordinat."
+          : "Lokasi tidak dapat diambil — scan dikirim tanpa koordinat."
+      );
+      return null;
+    }
+  }
+
+  function toggleGps() {
+    const next = !gpsEnabled;
+    setGpsEnabled(next);
+    setGpsError(null);
+    if (next) {
+      void acquirePosition();
+    } else {
+      setGpsCoords(null);
+      setGpsStatus("idle");
+    }
+  }
 
   async function startCamera() {
     try {
@@ -68,7 +121,8 @@ export default function ScanUploader() {
     });
     setLoading(true);
     try {
-      const res = await api.uploadScan(file, sourceType, locationType || undefined);
+      const coords = gpsEnabled ? await acquirePosition() : null;
+      const res = await api.uploadScan(file, sourceType, locationType || undefined, coords ?? undefined);
       setResult(res);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Terjadi kesalahan saat memproses gambar.");
@@ -97,6 +151,58 @@ export default function ScanUploader() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* GPS Tagging Toggle */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={toggleGps}
+            aria-pressed={gpsEnabled}
+            className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-all ${
+              gpsEnabled
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                : "border-slate-200/80 bg-white text-slate-600 hover:border-emerald-500/30 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <Navigation className={`h-3.5 w-3.5 ${gpsEnabled ? "text-emerald-500" : ""}`} />
+              Tag Lokasi GPS Otomatis
+            </span>
+            <span
+              className={`relative h-5 w-9 rounded-full transition-colors ${
+                gpsEnabled ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
+                  gpsEnabled ? "left-[1.15rem]" : "left-0.5"
+                }`}
+              />
+            </span>
+          </button>
+
+          {gpsEnabled && gpsStatus === "loading" && (
+            <p className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              <RefreshCw className="h-3 w-3 animate-spin" /> Mengambil koordinat GPS...
+            </p>
+          )}
+          {gpsStatus === "ok" && gpsCoords && (
+            <a
+              href={`https://www.google.com/maps?q=${gpsCoords.latitude},${gpsCoords.longitude}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-emerald-600 hover:underline dark:text-emerald-400"
+            >
+              <MapPin className="h-3 w-3" />
+              {gpsCoords.latitude.toFixed(5)}, {gpsCoords.longitude.toFixed(5)} — lihat di Maps
+            </a>
+          )}
+          {gpsError && (
+            <p className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-amber-500">
+              <AlertCircle className="h-3 w-3 shrink-0" /> {gpsError}
+            </p>
+          )}
         </div>
 
         {/* Action Buttons */}
