@@ -20,9 +20,10 @@ COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_module
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps ./apps
 COPY packages ./packages
-WORKDIR /app/apps/web
-RUN pnpm build
-WORKDIR /app
+    WORKDIR /app/apps/web
+    RUN echo "=== pwd & ls ===" && pwd && ls -la && echo "--- tsconfig ---" && cat tsconfig.json && echo "--- next.config ---" && cat next.config.mjs | head -n 20 && echo "--- tsc check ---" && pnpm exec tsc --noEmit --skipLibCheck 2>&1 | head -n 30; echo "exit:$?"
+    RUN pnpm build
+    WORKDIR /app
 
 # ---- Runner ----
 FROM base AS runner
