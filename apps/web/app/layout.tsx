@@ -10,6 +10,7 @@ import PageTransition from "@/components/PageTransition";
 import { ToastProvider } from "@/components/ToastProvider";
 import CookiePopup from "@/components/CookiePopup";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import InstallPrompt from "@/components/InstallPrompt";
 
 
 export const metadata: Metadata = {
@@ -96,6 +97,7 @@ export default function RootLayout({
         </ToastProvider>
         <CookiePopup />
         <ServiceWorkerRegister />
+        <InstallPrompt />
       </body>
     </html>
   );

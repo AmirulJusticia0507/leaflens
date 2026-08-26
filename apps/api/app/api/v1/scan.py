@@ -10,6 +10,7 @@ from app.models import LeafScan
 from app.schemas import AnalysisResult, ScanResponse
 from app.services import get_storage_path
 from app.services.ollama_service import analyze_leaf
+from app.services.verification_service import verify_analysis
 
 router = APIRouter()
 
@@ -56,6 +57,12 @@ async def scan_leaf(
     b64_image = base64.b64encode(contents).decode("utf-8")
     try:
         analysis: AnalysisResult = await analyze_leaf(b64_image)
+        # Hybrid verification jika confidence rendah atau nama generik
+        if analysis.confidence_score < 0.85 or len(analysis.plant_name.split()) <= 1:
+            try:
+                analysis = await verify_analysis(analysis)
+            except Exception:
+                pass
     except Exception as exc:
         raise HTTPException(
             status_code=502,

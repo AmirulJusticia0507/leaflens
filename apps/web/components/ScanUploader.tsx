@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { queueScan, getPendingScans, removePendingScan, countPending } from "@/lib/offline-queue";
 import LeafResultCard from "@/components/LeafResultCard";
 import SaveToTrackerForm from "@/components/SaveToTrackerForm";
 import type { ScanResponse } from "@leaflens/shared";
-import { Camera, Upload, MapPin, StopCircle, Sparkles, AlertCircle, RefreshCw, Navigation } from "lucide-react";
+import { Camera, Upload, MapPin, StopCircle, Sparkles, AlertCircle, RefreshCw, Navigation, CloudOff } from "lucide-react";
 
 const LOCATION_TYPES = ["Indoor", "Outdoor", "Liar/Hutan"];
 
@@ -38,6 +39,31 @@ export default function ScanUploader() {
   const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [gpsError, setGpsError] = useState<string | null>(null);
+
+  // --- Offline queue ---
+  const [pendingCount, setPendingCount] = useState(0);
+  const [queueMsg, setQueueMsg] = useState<string | null>(null);
+  useEffect(() => {
+    countPending().then(setPendingCount).catch(() => {});
+    const onOnline = () => {
+      // auto-sync pending when back online
+      void syncPending();
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, []);
+
+  async function syncPending() {
+    const pending = await getPendingScans().catch(() => []);
+    for (const p of pending) {
+      try {
+        const f = new File([p.file], p.fileName, { type: p.fileType });
+        await api.uploadScan(f, p.sourceType, p.locationType, p.latitude != null ? { latitude: p.latitude, longitude: p.longitude! } : undefined);
+        if (p.id != null) await removePendingScan(p.id);
+      } catch {}
+    }
+    countPending().then(setPendingCount).catch(() => {});
+  }
 
   async function acquirePosition(): Promise<{ latitude: number; longitude: number } | null> {
     if (gpsCoords) return gpsCoords;
@@ -120,12 +146,37 @@ export default function ScanUploader() {
       return URL.createObjectURL(file);
     });
     setLoading(true);
+    setQueueMsg(null);
     try {
       const coords = gpsEnabled ? await acquirePosition() : null;
       const res = await api.uploadScan(file, sourceType, locationType || undefined, coords ?? undefined);
       setResult(res);
+      countPending().then(setPendingCount).catch(() => {});
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Terjadi kesalahan saat memproses gambar.");
+      const msg = e instanceof Error ? e.message : "Terjadi kesalahan saat memproses gambar.";
+      const isOffline = !navigator.onLine || msg.toLowerCase().includes("failed to fetch") || msg.includes("NetworkError");
+      if (isOffline) {
+        try {
+          const coords = gpsCoords ?? (gpsEnabled ? await acquirePosition().catch(() => null) : null);
+          await queueScan({
+            file,
+            fileName: file.name,
+            fileType: file.type,
+            sourceType,
+            locationType: locationType || undefined,
+            latitude: coords?.latitude,
+            longitude: coords?.longitude,
+          });
+          const c = await countPending();
+          setPendingCount(c);
+          setQueueMsg(`Jaringan offline — scan disimpan di antrean lokal (${c} tertunda). Akan otomatis terkirim saat online kembali.`);
+          setError(null);
+        } catch {
+          setError(msg);
+        }
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -279,6 +330,31 @@ export default function ScanUploader() {
           <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs font-bold text-rose-500">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
+          </div>
+        )}
+
+        {queueMsg && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+            <span className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
+              <CloudOff className="h-4 w-4 shrink-0" /> {queueMsg}
+            </span>
+            <button
+              onClick={() => void syncPending()}
+              className="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-700"
+            >
+              Coba Kirim Ulang
+            </button>
+          </div>
+        )}
+
+        {pendingCount > 0 && !queueMsg && (
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs dark:border-slate-800 dark:bg-slate-900">
+            <span className="font-semibold text-slate-600 dark:text-slate-300">
+              {pendingCount} scan tertunda (offline)
+            </span>
+            <button onClick={() => void syncPending()} className="font-bold text-emerald-600 hover:underline">
+              Sinkronkan
+            </button>
           </div>
         )}
       </div>

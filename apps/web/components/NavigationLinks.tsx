@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Camera, History } from "lucide-react";
+import { LayoutDashboard, Camera, History, Sprout } from "lucide-react";
 
 export default function NavigationLinks() {
   const pathname = usePathname();
@@ -10,6 +10,7 @@ export default function NavigationLinks() {
   const links = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/scan", label: "Scan Daun", icon: Camera },
+    { href: "/plants", label: "Database", icon: Sprout },
     { href: "/history", label: "Riwayat", icon: History },
   ];
 
