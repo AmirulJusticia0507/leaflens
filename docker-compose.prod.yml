@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-leaflens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-leaflens}
+      POSTGRES_DB: ${POSTGRES_DB:-leaflens}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-leaflens}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    # Untuk GPU NVIDIA, uncomment:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    # Inisialisasi model (jalan sekali, bisa juga manual: docker compose exec ollama ollama pull llava)
+    # command: serve
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-leaflens}:${POSTGRES_PASSWORD:-leaflens}@postgres:5432/${POSTGRES_DB:-leaflens}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-llava}
+      OLLAMA_REASONING_MODEL: ${OLLAMA_REASONING_MODEL:-deepseek-r1}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://web:3000}
+      STORAGE_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health', timeout=5).raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_PROXY_TARGET: http://api:8000
+      # Kosongkan agar frontend pakai rewrites (same-origin) — paling aman untuk CORS
+      NEXT_PUBLIC_API_BASE_URL: ""
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  ollama_data:
+  uploads_data:

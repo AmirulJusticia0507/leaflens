@@ -184,6 +184,48 @@ C:\laragon\bin\cloudflared\cloudflared.exe tunnel --url http://localhost:8000
 > - Jika frontend diakses via URL publik tapi `NEXT_PUBLIC_API_BASE_URL` masih `http://localhost:8000`, browser di HP/orang lain akan gagal (mencoba `localhost` milik device mereka). Untuk demo publik: set di `apps/api/.env` → `NEXT_PUBLIC_API_BASE_URL=https://<url-api-publik>` dan tambahkan origin web ke `CORS_ORIGINS` (mis. `https://xxxx.trycloudflare.com`), lalu restart `pnpm dev`.
 > - Untuk akses HP 1 Wi-Fi saja, tidak perlu Cloudflare — cukup pakai `http://<IP-LAN>:3000` (bagian sebelumnya).
 
+## Deploy Production
+
+### Opsi A — Docker Compose (VPS, tetap privat & offline)
+
+File sudah siap: `docker-compose.prod.yml` + `apps/api/Dockerfile` + `apps/web/Dockerfile`.
+
+```bash
+# 1. Siapkan env production
+cp apps/api/.env.example apps/api/.env
+# edit: DATABASE_URL, CORS_ORIGINS=https://yourdomain.com, OLLAMA_VISION_MODEL=llava
+
+# 2. Build & jalankan (butuh Docker + Compose)
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 3. Inisialisasi model Ollama (sekali, di dalam container ollama)
+docker compose -f docker-compose.prod.yml exec ollama ollama pull llava
+docker compose -f docker-compose.prod.yml exec ollama ollama pull deepseek-r1
+# cek: docker compose exec ollama ollama list
+
+# 4. Cek service
+curl http://localhost:8000/health
+curl http://localhost:3000/api/v1/history
+
+# 5. Domain + HTTPS (Nginx reverse proxy di depan web:3000, Let's Encrypt)
+# Contoh Nginx:
+#   server { listen 443 ssl; server_name leaflens.com;
+#     ssl_certificate /etc/letsencrypt/live/leaflens.com/fullchain.pem;
+#     location / { proxy_pass http://localhost:3000; }
+#     location /api/ { proxy_pass http://localhost:8000; }
+#   }
+```
+
+Volume persisten: `pgdata` (DB), `ollama_data` (model 4-7GB), `uploads_data` (foto). Untuk GPU, uncomment blok `deploy.resources` di `ollama` service.
+
+### Opsi B — Vercel + Railway (tanpa GPU)
+
+- **Web** → Vercel: import repo, framework Next.js, `pnpm --filter @leaflens/web build`
+- **API** → Railway/Render: deploy `apps/api` via Dockerfile, set `DATABASE_URL` ke Neon/Supabase, `OLLAMA_BASE_URL` ke `https://api.groq.com` atau mock jika tidak ada GPU
+- Set `NEXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com` dan `CORS_ORIGINS=https://yourdomain.com`
+
+> Untuk produksi tanpa GPU, pertimbangkan ganti `OLLAMA_VISION_MODEL` ke API eksternal atau tetap pakai `moondream` (CPU-friendly, 1.7GB).
+
 ## Troubleshooting
 
 - `uvicorn is not recognized` → sudah di-fix di `package.json` (`".venv\\Scripts\\python.exe -m uvicorn"`), cukup `pnpm dev`
