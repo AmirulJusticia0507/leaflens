@@ -8,11 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir .
-
 COPY app ./app
 COPY main.py ./
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir .
 
 # Buat folder uploads
 RUN mkdir -p uploads
