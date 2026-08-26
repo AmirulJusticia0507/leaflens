@@ -12,9 +12,14 @@ RUN pnpm install --frozen-lockfile
 
 # ---- Builder ----
 FROM base AS builder
-COPY --from=deps /app ./
-COPY . .
-RUN echo "=== DEBUG: list all tsx in apps/web ===" && find apps/web -type f -name "*.tsx" | sort | head -n 50 && echo "=== components ===" && ls -la apps/web/components/ | head -n 30
+# Copy deps first (pnpm store + node_modules)
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+# Copy source explicitly (avoid .dockerignore surprises)
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps ./apps
+COPY packages ./packages
 RUN pnpm --filter @leaflens/web build
 
 # ---- Runner ----
