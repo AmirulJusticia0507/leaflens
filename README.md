@@ -93,6 +93,38 @@ Aktifkan toggle *Tag Lokasi GPS Otomatis* di halaman Scan. Browser akan minta iz
 
 Buka `/plants` — 50 entri `INDONESIAN_PLANTS` (`packages/shared/src/indonesian-plants.ts`), pencarian client-side (nama/ilmiah/kategori), filter kategori. Data bisa dipakai sebagai fallback jika vision confidence rendah.
 
+## Akses Database (Beekeeper Studio)
+
+Kredensial dari `apps/api/.env` (`DATABASE_URL`):
+
+```
+postgresql+asyncpg://leaflens:leaflens@localhost:5432/leaflens
+```
+
+**Beekeeper Studio → New Connection → Postgres:**
+
+| Field    | Nilai        |
+|----------|--------------|
+| Host     | `localhost`  |
+| Port     | `5432`       |
+| Database | `leaflens`   |
+| Username | `leaflens`   |
+| Password | `leaflens`   |
+| SSL      | Off          |
+
+Klik *Test* → *Connect*. Tabel utama: `plants` dan `leaf_scans` (kolom `latitude`/`longitude`/`full_analysis` berisi `health_status` & `treatment_steps`).
+
+**Alternatif tanpa GUI:**
+
+```bash
+# psql (jika ter-install)
+psql postgresql://leaflens:leaflens@localhost:5432/leaflens -c "SELECT common_name, plant_type FROM plants;"
+
+# atau via Python venv
+cd apps/api
+.venv\Scripts\python.exe -c "import asyncio; from app.core.database import engine; from sqlalchemy import text; asyncio.run(engine.connect().execute(text('SELECT count(*) FROM leaf_scans')).fetchone())"
+```
+
 ## Konfigurasi Ollama
 
 `apps/api/.env`:
