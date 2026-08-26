@@ -14,7 +14,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 COPY --from=deps /app ./
 COPY . .
-RUN ls -la apps/web/components/ | head -n 20 && ls -la apps/web/app/ | head -n 20
+RUN echo "=== DEBUG: list all tsx in apps/web ===" && find apps/web -type f -name "*.tsx" | sort | head -n 50 && echo "=== components ===" && ls -la apps/web/components/ | head -n 30
 RUN pnpm --filter @leaflens/web build
 
 # ---- Runner ----
