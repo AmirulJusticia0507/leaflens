@@ -20,7 +20,7 @@ COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_module
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps ./apps
 COPY packages ./packages
-RUN echo "=== DEBUG BUILDER ===" && ls -la apps/web/ | head -n 20 && echo "--- tsconfig cat ---" && cat apps/web/tsconfig.json; echo "--- find tsx ---" && find apps/web -type f -name "*.tsx" | sort | head -n 60
+RUN echo "=== DEBUG ===" && ls -lh apps/web/tsconfig.json && wc -l apps/web/tsconfig.json && head -n 30 apps/web/tsconfig.json && echo "--- components count ---" && ls apps/web/components/*.tsx | wc -l && ls apps/web/components/ | head -n 20
 RUN pnpm --filter @leaflens/web build
 
 # ---- Runner ----
