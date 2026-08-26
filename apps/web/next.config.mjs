@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const API_PROXY_TARGET = process.env.API_PROXY_TARGET ?? "http://localhost:8000";
+const isCapacitor = process.env.CAPACITOR_BUILD === "true";
+const isProduction = process.env.NODE_ENV === "production";
 
 const nextConfig = {
+  output: isCapacitor ? "export" : isProduction ? "standalone" : undefined,
   reactStrictMode: true,
   transpilePackages: ["@leaflens/shared"],
   async headers() {
@@ -16,6 +19,7 @@ const nextConfig = {
     ];
   },
   async rewrites() {
+    if (isCapacitor) return [];
     return [
       {
         source: "/api/v1/:path*",

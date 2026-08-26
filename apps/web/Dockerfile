@@ -12,35 +12,30 @@ RUN pnpm install --frozen-lockfile
 
 # ---- Builder ----
 FROM base AS builder
-# Copy deps first (pnpm store + node_modules)
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-# Copy source explicitly (avoid .dockerignore surprises)
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps ./apps
 COPY packages ./packages
-    WORKDIR /app/apps/web
-    RUN echo "=== pwd & ls ===" && pwd && ls -la && echo "--- tsconfig ---" && cat tsconfig.json && echo "--- next.config ---" && cat next.config.mjs | head -n 20 && echo "--- tsc check ---" && pnpm exec tsc --noEmit --skipLibCheck 2>&1 | head -n 30; echo "exit:$?"
-    RUN pnpm build
-    WORKDIR /app
+ENV NODE_ENV=production
+RUN pnpm --filter @leaflens/web build
 
 # ---- Runner ----
-FROM base AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /app/apps/web/package.json ./apps/web/package.json
-COPY --from=builder /app/packages/shared ./packages/shared
-COPY --from=builder /app/apps/web/.next ./apps/web/.next
-COPY --from=builder /app/apps/web/public ./apps/web/public
-COPY --from=builder /app/node_modules ./node_modules
-
-EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-CMD ["pnpm", "--filter", "@leaflens/web", "start"]
+
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/web/.next/standalone ./
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /app/apps/web/public ./apps/web/public
+
+USER nextjs
+EXPOSE 3000
+CMD ["node", "apps/web/server.js"]
