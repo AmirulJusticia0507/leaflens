@@ -164,6 +164,25 @@ pnpm --filter @leaflens/web exec next dev -H 0.0.0.0 -p 3000
 # buka https://10.70.193.117:3000 → Advanced → Proceed
 ```
 
+## Expose via Cloudflare Tunnel (opsional, untuk demo publik)
+
+Gunakan `cloudflared` dari Laragon (`C:\laragon\bin\cloudflared\cloudflared.exe`) untuk mendapatkan URL publik sementara `https://*.trycloudflare.com`.
+
+```powershell
+# Terminal 1 — Web (LeafLens di localhost:3000 via pnpm dev)
+C:\laragon\bin\cloudflared\cloudflared.exe tunnel --url http://localhost:3000
+# akan cetak: https://xxxx-xxxx.trycloudflare.com
+
+# Terminal 2 — API saja (jika frontend perlu panggil API publik, bukan localhost)
+C:\laragon\bin\cloudflared\cloudflared.exe tunnel --url http://localhost:8000
+# catat URL API publiknya, mis. https://yyyy-yyyy.trycloudflare.com
+```
+
+> **Catatan:**
+> - URL `trycloudflare.com` acak dan sementara (ganti tiap run) — cocok untuk demo, bukan produksi.
+> - Jika frontend diakses via URL publik tapi `NEXT_PUBLIC_API_BASE_URL` masih `http://localhost:8000`, browser di HP/orang lain akan gagal (mencoba `localhost` milik device mereka). Untuk demo publik: set di `apps/api/.env` → `NEXT_PUBLIC_API_BASE_URL=https://<url-api-publik>` dan tambahkan origin web ke `CORS_ORIGINS` (mis. `https://xxxx.trycloudflare.com`), lalu restart `pnpm dev`.
+> - Untuk akses HP 1 Wi-Fi saja, tidak perlu Cloudflare — cukup pakai `http://<IP-LAN>:3000` (bagian sebelumnya).
+
 ## Troubleshooting
 
 - `uvicorn is not recognized` → sudah di-fix di `package.json` (`".venv\\Scripts\\python.exe -m uvicorn"`), cukup `pnpm dev`
