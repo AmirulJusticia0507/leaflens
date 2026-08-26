@@ -19,7 +19,7 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps ./apps
 COPY packages ./packages
 WORKDIR /app/apps/web
-RUN echo "=== DEBUG ===" && pwd && ls -la && cat tsconfig.json && pnpm build
+RUN echo "=== DEBUG ===" && pwd && ls -la node_modules/.bin/ | head -n 20 && pnpm build
 WORKDIR /app
 
 # ---- Runner ----
