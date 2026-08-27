@@ -1,0 +1,26 @@
+{
+  "packageId": "com.leaflens.twa",
+  "host": "localhost",
+  "name": "LeafLens",
+  "shortName": "LeafLens",
+  "iconUrl": "https://localhost/icons/icon-512.png",
+  "maskableIconUrl": "https://localhost/icons/maskable-512.png",
+  "themeColor": "#059669",
+  "backgroundColor": "#0f172a",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "signingKey": {
+    "path": "./keystore.keystore",
+    "alias": "leaflens"
+  },
+  "additionalTrustedOrigins": [],
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "useNeutralActivity": false,
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "locationDelegation": {
+    "enabled": true
+  }
+}

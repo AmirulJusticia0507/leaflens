@@ -23,7 +23,7 @@ services:
       - ollama_data:/root/.ollama
     ports:
       - "11434:11434"
-    # Untuk GPU NVIDIA, uncomment:
+    # Untuk GPU NVIDIA, uncomment deploy.resources.reservations
     # deploy:
     #   resources:
     #     reservations:
@@ -31,8 +31,6 @@ services:
     #         - driver: nvidia
     #           count: 1
     #           capabilities: [gpu]
-    # Inisialisasi model (jalan sekali, bisa juga manual: docker compose exec ollama ollama pull llava)
-    # command: serve
 
   api:
     build:
@@ -47,7 +45,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-leaflens}:${POSTGRES_PASSWORD:-leaflens}@postgres:5432/${POSTGRES_DB:-leaflens}
       OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-llava}
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-moondream}
       OLLAMA_REASONING_MODEL: ${OLLAMA_REASONING_MODEL:-deepseek-r1}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://web:3000}
       STORAGE_DIR: /app/uploads
