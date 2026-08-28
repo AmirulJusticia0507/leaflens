@@ -7,8 +7,35 @@ import LeafResultCard from "@/components/LeafResultCard";
 import SaveToTrackerForm from "@/components/SaveToTrackerForm";
 import type { ScanResponse } from "@leaflens/shared";
 import { Camera, Upload, MapPin, StopCircle, Sparkles, AlertCircle, RefreshCw, Navigation, CloudOff } from "lucide-react";
+import { useToast } from "@/components/ToastProvider";
 
 const LOCATION_TYPES = ["Indoor", "Outdoor", "Liar/Hutan"];
+
+function showNativeNotification(title: string, body: string) {
+  if (typeof window !== "undefined" && "Notification" in window) {
+    if (Notification.permission === "granted") {
+      try {
+        new Notification(title, {
+          body,
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+        });
+      } catch {}
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((perm) => {
+        if (perm === "granted") {
+          try {
+            new Notification(title, {
+              body,
+              icon: "/icons/icon-192.png",
+              badge: "/icons/icon-192.png",
+            });
+          } catch {}
+        }
+      }).catch(() => {});
+    }
+  }
+}
 
 function getPosition(timeoutMs = 8000): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
@@ -25,6 +52,7 @@ function getPosition(timeoutMs = 8000): Promise<GeolocationPosition> {
 }
 
 export default function ScanUploader() {
+  const toast = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [locationType, setLocationType] = useState("");
   const [loading, setLoading] = useState(false);
@@ -151,6 +179,10 @@ export default function ScanUploader() {
       const coords = gpsEnabled ? await acquirePosition() : null;
       const res = await api.uploadScan(file, sourceType, locationType || undefined, coords ?? undefined);
       setResult(res);
+      const plantName = res.result.plant_name || "Tanaman";
+      const healthStatus = res.result.health_status ? ` (Status: ${res.result.health_status})` : "";
+      toast.success("Scan Daun Berhasil! 🍃", `Teridentifikasi: ${plantName}${healthStatus}`);
+      showNativeNotification("LeafLens AI — Scan Berhasil 🍃", `Teridentifikasi: ${plantName}${healthStatus}`);
       countPending().then(setPendingCount).catch(() => {});
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Terjadi kesalahan saat memproses gambar.";
@@ -170,12 +202,15 @@ export default function ScanUploader() {
           const c = await countPending();
           setPendingCount(c);
           setQueueMsg(`Jaringan offline — scan disimpan di antrean lokal (${c} tertunda). Akan otomatis terkirim saat online kembali.`);
+          toast.info("Scan Disimpan Offline 📦", `Disimpan di antrean lokal (${c} tertunda).`);
           setError(null);
         } catch {
           setError(msg);
+          toast.error("Gagal Menyimpan Scan", msg);
         }
       } else {
         setError(msg);
+        toast.error("Gagal Analisis Daun", msg);
       }
     } finally {
       setLoading(false);
