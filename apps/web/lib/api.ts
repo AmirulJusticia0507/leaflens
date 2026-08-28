@@ -6,9 +6,39 @@ import type {
   PlantCreate,
 } from "@leaflens/shared";
 
-// Default: same-origin (di-proxy oleh Next.js rewrites ke FastAPI).
-// Set NEXT_PUBLIC_API_BASE_URL hanya bila memanggil API langsung tanpa proxy.
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const isCapacitor = window.location.protocol === "capacitor:" || window.location.hostname === "localhost";
+    // In Capacitor mobile static bundle, connect to backend API server
+    if (isCapacitor && window.location.port !== "3000") {
+      return "http://10.7.183.172:8000";
+    }
+  }
+  return "";
+}
+
+const API_BASE = getApiBaseUrl();
+
+async function handleResponse<T>(res: Response, fallbackErrorMsg: string): Promise<T> {
+  const contentType = res.headers.get("content-type") || "";
+  if (!res.ok || contentType.includes("text/html")) {
+    const text = await res.text().catch(() => "");
+    if (res.status === 404 || contentType.includes("text/html")) {
+      throw new Error(
+        `Server API backend (${API_BASE || "localhost:8000"}) tidak dapat dijangkau (HTTP ${res.status}). Pastikan server FastAPI aktif.`
+      );
+    }
+    throw new Error(`${fallbackErrorMsg} (HTTP ${res.status}): ${text.slice(0, 150)}`);
+  }
+  try {
+    return await res.json();
+  } catch {
+    throw new Error(`Respons server bukan format JSON yang valid.`);
+  }
+}
 
 async function uploadScan(
   image: Blob,
@@ -29,15 +59,13 @@ async function uploadScan(
     method: "POST",
     body: form,
   });
-  if (!res.ok) throw new Error(`Scan gagal: ${res.status}`);
-  return res.json();
+  return handleResponse<ScanResponse>(res, "Scan gagal");
 }
 
 async function fetchHistory(plantId?: string): Promise<HistoryItem[]> {
   const qs = plantId ? `?plant_id=${encodeURIComponent(plantId)}` : "";
   const res = await fetch(`${API_BASE}/api/v1/history${qs}`);
-  if (!res.ok) throw new Error(`History gagal: ${res.status}`);
-  return res.json();
+  return handleResponse<HistoryItem[]>(res, "History gagal");
 }
 
 async function fetchMonthlyHealth(
@@ -47,8 +75,7 @@ async function fetchMonthlyHealth(
   const params = new URLSearchParams({ months: String(months) });
   if (plantId) params.set("plant_id", plantId);
   const res = await fetch(`${API_BASE}/api/v1/history/monthly-health?${params}`);
-  if (!res.ok) throw new Error(`Grafik kesehatan gagal: ${res.status}`);
-  return res.json();
+  return handleResponse<MonthlyHealthPoint[]>(res, "Grafik kesehatan gagal");
 }
 
 async function addPlant(payload: PlantCreate): Promise<PlantPublic> {
@@ -57,14 +84,12 @@ async function addPlant(payload: PlantCreate): Promise<PlantPublic> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Gagal menyimpan tanaman: ${res.status}`);
-  return res.json();
+  return handleResponse<PlantPublic>(res, "Gagal menyimpan tanaman");
 }
 
 async function fetchPlants(): Promise<PlantPublic[]> {
   const res = await fetch(`${API_BASE}/api/v1/plants`);
-  if (!res.ok) throw new Error(`Gagal memuat daftar tanaman: ${res.status}`);
-  return res.json();
+  return handleResponse<PlantPublic[]>(res, "Gagal memuat daftar tanaman");
 }
 
 export const api = { uploadScan, fetchHistory, fetchMonthlyHealth, addPlant, fetchPlants };
