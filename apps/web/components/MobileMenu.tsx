@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, LayoutDashboard, Camera, History } from "lucide-react";
+import Tooltip from "@/components/Tooltip";
 
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -30,14 +31,16 @@ export default function MobileMenu() {
   return (
     <>
       {/* Hamburger Button */}
-      <button
-        id="mobile-menu-button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Tutup menu" : "Buka menu"}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-sm backdrop-blur-md transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
+      <Tooltip content={open ? "Tutup menu" : "Buka menu"} side="bottom">
+        <button
+          id="mobile-menu-button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Tutup menu" : "Buka menu"}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-sm backdrop-blur-md transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </Tooltip>
 
       {/* Backdrop */}
       {open && (

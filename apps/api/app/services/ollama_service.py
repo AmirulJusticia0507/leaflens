@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from app.core.ollama import ollama_generate
+from app.core.groq_client import groq_vision
 from app.core.config import get_settings
 from app.schemas import AnalysisResult
 
@@ -37,9 +37,8 @@ Rules:
 
 
 def _normalize(data: dict) -> dict:
-    """Toleransi untuk model vision yang kurang patuh JSON (mis. moondream)."""
+    """Toleransi untuk model vision yang kurang patuh JSON."""
 
-    # growth_time_info: normalisasi key yang memakai spasi / variasi penamaan
     gti = data.get("growth_time_info")
     if isinstance(gti, dict):
         norm: dict = {}
@@ -63,7 +62,6 @@ def _normalize(data: dict) -> dict:
             "growth_rate": "Sedang",
         }
 
-    # Top-level defaults untuk field yang sering hilang pada moondream
     data.setdefault(
         "leaf_characteristics",
         data.get("characteristics") or "Tidak tersedia",
@@ -83,28 +81,20 @@ def _normalize(data: dict) -> dict:
     data.setdefault("plant_name", "Tanaman Tidak Dikenal")
     data.setdefault("plant_type", "herb")
 
-    # Normalisasi plant_type (model sering mengembalikan "Pohon" bukan "tree")
     pt_raw = str(data.get("plant_type", "")).strip().lower()
     mapping = {
-        "pohon": "tree",
-        "tree": "tree",
-        "semak": "shrub",
-        "shrub": "shrub",
-        "herba": "herb",
-        "herb": "herb",
-        "merambat": "vine",
-        "vine": "vine",
-        "sukulen": "succulent",
-        "succulent": "succulent",
+        "pohon": "tree", "tree": "tree",
+        "semak": "shrub", "shrub": "shrub",
+        "herba": "herb", "herb": "herb",
+        "merambat": "vine", "vine": "vine",
+        "sukulen": "succulent", "succulent": "succulent",
     }
     data["plant_type"] = mapping.get(pt_raw, "herb")
 
-    # scientific_name "null" string -> None
     sci = data.get("scientific_name")
     if isinstance(sci, str) and sci.strip().lower() in ("null", "none", ""):
         data["scientific_name"] = None
 
-    # Deteksi model yang hanya mengembalikan template contoh (placeholder)
     placeholders = {"nama lokal umum", "common name in indonesian", "nama ilmiah"}
     if str(data.get("plant_name", "")).strip().lower() in placeholders:
         data["plant_name"] = "Tanaman Tidak Teridentifikasi"
@@ -119,10 +109,10 @@ def _normalize(data: dict) -> dict:
 
 
 async def analyze_leaf(b64_image: str) -> AnalysisResult:
-    raw = await ollama_generate(
-        model=settings.ollama_vision_model,
+    raw = await groq_vision(
+        model=settings.groq_vision_model,
         prompt=SYSTEM_PROMPT,
-        images=[b64_image],
+        image_base64=b64_image,
     )
     try:
         data = json.loads(raw)

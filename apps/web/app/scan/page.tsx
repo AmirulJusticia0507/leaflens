@@ -1,4 +1,5 @@
 import ScanUploader from "@/components/ScanUploader";
+import Tooltip from "@/components/Tooltip";
 import { Camera, Sparkles, ShieldCheck, Zap } from "lucide-react";
 
 export default function ScanPage() {
@@ -29,13 +30,15 @@ export default function ScanPage() {
           {/* Feature Pills */}
           <div className="flex shrink-0 flex-col gap-2">
             {[
-              { icon: ShieldCheck, text: "100% Pemrosesan Lokal" },
-              { icon: Zap, text: "Inferensi < 50ms" },
-              { icon: Sparkles, text: "Llama3 Multimodal AI" },
-            ].map(({ icon: Icon, text }) => (
-              <span key={text} className="flex items-center gap-2 text-xs font-medium text-emerald-100">
-                <Icon className="h-4 w-4 text-emerald-300" /> {text}
-              </span>
+              { icon: ShieldCheck, text: "100% Pemrosesan Lokal", tip: "Semua pemrosesan dilakukan di perangkat lokal, tidak ada data yang dikirim ke cloud" },
+              { icon: Zap, text: "Inferensi < 50ms", tip: "Kecepatan inferensi AI didukung oleh GPU lokal" },
+              { icon: Sparkles, text: "Llama3 Multimodal AI", tip: "Menggunakan model Llama3 Vision untuk analisis gambar" },
+            ].map(({ icon: Icon, text, tip }) => (
+              <Tooltip key={text} content={tip} side="left">
+                <span className="flex items-center gap-2 text-xs font-medium text-emerald-100">
+                  <Icon className="h-4 w-4 text-emerald-300" /> {text}
+                </span>
+              </Tooltip>
             ))}
           </div>
         </div>

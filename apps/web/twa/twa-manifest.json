@@ -3,6 +3,7 @@
   "host": "localhost",
   "name": "LeafLens",
   "shortName": "LeafLens",
+  "startUrl": "/",
   "iconUrl": "https://localhost/icons/icon-512.png",
   "maskableIconUrl": "https://localhost/icons/maskable-512.png",
   "themeColor": "#059669",
@@ -22,5 +23,6 @@
   },
   "locationDelegation": {
     "enabled": true
-  }
+  },
+  "permissions": ["android.permission.CAMERA"]
 }

@@ -1,4 +1,4 @@
-# build-twa.ps1 — Build TWA APK dari LeafLens PWA
+# build-twa.ps1 - Build TWA APK dari LeafLens PWA
 # Requirements: cloudflared terinstall di C:\laragon\bin\cloudflared\
 # Usage: cd apps/web/twa; .\build-twa.ps1
 
@@ -54,7 +54,7 @@ if (-not (Test-Path "$PSScriptRoot\twa-manifest.json")) {
     & bubblewrap init --manifest $manifest --directory .
     Pop-Location
 } else {
-    Write-Host "twa-manifest.json exists — running update..." -ForegroundColor Yellow
+    Write-Host "twa-manifest.json exists - running update..." -ForegroundColor Yellow
     Push-Location $PSScriptRoot
     & bubblewrap update --manifest .
     Pop-Location
@@ -68,5 +68,5 @@ $env:BUBBLEWRAP_KEY_PASSWORD = "leaflens"
 & bubblewrap build --skipPwaValidation --skipSigning
 Pop-Location
 
-Write-Host "`n=== DONE ===" -ForegroundColor Green
+Write-Host "=== DONE ===" -ForegroundColor Green
 Write-Host "APK: $PSScriptRoot\app-release-signed.apk"

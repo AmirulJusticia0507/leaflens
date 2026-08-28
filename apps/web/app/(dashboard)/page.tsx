@@ -4,6 +4,7 @@ import HealthChart from "@/components/HealthChart";
 import DashboardStats from "@/components/DashboardStats";
 import RecentScansStream from "@/components/RecentScansStream";
 import LeafIcon from "@/components/LeafIcon";
+import Tooltip from "@/components/Tooltip";
 
 import { Camera, Sparkles, ArrowRight, ShieldCheck, Zap, Activity, HeartPulse } from "lucide-react";
 
@@ -49,21 +50,25 @@ export default function DashboardPage() {
 
             {/* Quick Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                href="/scan"
-                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-white px-6 py-3 text-sm font-bold text-emerald-700 shadow-lg shadow-black/10 transition-all duration-300 hover:scale-[1.02] hover:bg-emerald-50 hover:shadow-xl active:scale-[0.98]"
-              >
-                <Camera className="h-4.5 w-4.5 text-emerald-600 transition-transform duration-300 group-hover:rotate-12" />
-                <span>Mulai Scan Daun</span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+              <Tooltip content="Foto daun untuk diidentifikasi AI" side="bottom">
+                <Link
+                  href="/scan"
+                  className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-white px-6 py-3 text-sm font-bold text-emerald-700 shadow-lg shadow-black/10 transition-all duration-300 hover:scale-[1.02] hover:bg-emerald-50 hover:shadow-xl active:scale-[0.98]"
+                >
+                  <Camera className="h-4.5 w-4.5 text-emerald-600 transition-transform duration-300 group-hover:rotate-12" />
+                  <span>Mulai Scan Daun</span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </Tooltip>
 
-              <Link
-                href="/history"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 hover:border-white/50 active:scale-[0.98]"
-              >
-                <span>Lihat Riwayat Scan</span>
-              </Link>
+              <Tooltip content="Lihat semua riwayat identifikasi sebelumnya" side="bottom">
+                <Link
+                  href="/history"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 hover:border-white/50 active:scale-[0.98]"
+                >
+                  <span>Lihat Riwayat Scan</span>
+                </Link>
+              </Tooltip>
             </div>
           </div>
 

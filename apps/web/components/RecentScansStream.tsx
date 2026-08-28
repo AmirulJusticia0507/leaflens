@@ -5,6 +5,17 @@ import { api, API_BASE } from "@/lib/api";
 import type { HistoryItem } from "@leaflens/shared";
 import { History, ArrowRight, ShieldCheck, AlertCircle, Sparkles, MapPin } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+
+function Pulse({ className }: { className?: string }) {
+  return (
+    <motion.div
+      className={`rounded-xl bg-slate-200/70 dark:bg-slate-700/50 ${className ?? ""}`}
+      animate={{ opacity: [0.5, 1, 0.5] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("id-ID", {
@@ -36,7 +47,33 @@ export default function RecentScansStream() {
     };
   }, []);
 
-  if (loading || items.length === 0) return null;
+  if (loading) {
+    return (
+      <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">
+        <div className="mb-5 flex items-center gap-3">
+          <Pulse className="h-10 w-10 rounded-2xl" />
+          <div className="space-y-2">
+            <Pulse className="h-4 w-48" />
+            <Pulse className="h-3 w-64" />
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3.5 rounded-2xl border border-slate-200/70 bg-white/80 p-3.5 dark:border-slate-800/70 dark:bg-slate-950/40">
+              <Pulse className="h-14 w-14 shrink-0 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <Pulse className="h-3 w-3/4" />
+                <Pulse className="h-2.5 w-1/2" />
+                <Pulse className="h-4 w-16 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) return null;
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">

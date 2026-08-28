@@ -1,0 +1,34 @@
+# fly.io deployment config
+# Run: flyctl deploy setelah ini
+
+# App name
+app: "leaflens-api"
+
+# Region (Singapura biar cepat buat Indonesia)
+region: "sg"
+
+# Build configuration
+services:
+  - auto: false  # kita akan handle sendir via Dockerfile
+
+# Run command
+run: "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+# Stop timeout
+kill_signal: SIGTERM
+kill_grace_period: 5
+
+# Size
+vm: "shared-cpu-1x"
+
+# Database (opsional, kita pake external PostgreSQL nanti atau pake free tier 3 bln)
+# postgres: []
+
+# Environment variables
+env:
+  GROQ_API_KEY: ""
+  GROQ_VISION_MODEL: qwen/qwen3.6-27b
+  GROQ_REASONING_MODEL: deepseek-r1-distill-llama-70b
+  DATABASE_URL: postgresql://leaflens:leaflens@internal:5432/leaflens
+  CORS_ORIGINS: "*"
+  STORAGE_DIR: /tmp/uploads

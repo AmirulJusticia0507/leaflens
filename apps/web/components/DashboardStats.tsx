@@ -3,6 +3,17 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Sprout, Activity, ScanLine, Sparkles, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+
+function Pulse({ className }: { className?: string }) {
+  return (
+    <motion.div
+      className={`rounded-lg bg-slate-200/70 dark:bg-slate-700/50 ${className ?? ""}`}
+      animate={{ opacity: [0.5, 1, 0.5] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
+}
 
 export default function DashboardStats() {
   const [stats, setStats] = useState({
@@ -112,9 +123,13 @@ export default function DashboardStats() {
 
             {/* Middle Row: Big Stat Number */}
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                {card.value}
-              </span>
+              {loading ? (
+                <Pulse className="h-9 w-20" />
+              ) : (
+                <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  {card.value}
+                </span>
+              )}
               <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {card.unit}
               </span>
@@ -122,12 +137,16 @@ export default function DashboardStats() {
 
             {/* Bottom Row: Status Badge */}
             <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800/60">
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${card.badgeColor}`}
-              >
-                <TrendingUp className="h-3 w-3" />
-                {card.badge}
-              </span>
+              {loading ? (
+                <Pulse className="h-5 w-24 rounded-full" />
+              ) : (
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${card.badgeColor}`}
+                >
+                  <TrendingUp className="h-3 w-3" />
+                  {card.badge}
+                </span>
+              )}
             </div>
           </div>
         );

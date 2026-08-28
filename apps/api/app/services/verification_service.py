@@ -1,9 +1,9 @@
-"""Hybrid verification: vision result -> deepseek-r1 cross-check."""
+"""Hybrid verification: vision result -> reasoning model cross-check via Groq."""
 from __future__ import annotations
 
 import json
 
-from app.core.ollama import ollama_generate
+from app.core.groq_client import groq_chat
 from app.core.config import get_settings
 from app.schemas import AnalysisResult
 
@@ -25,26 +25,24 @@ Kembalikan hanya JSON, tanpa markdown."""
 
 
 async def verify_analysis(vision_result: AnalysisResult) -> AnalysisResult:
-    """Panggil deepseek-r1 untuk verifikasi silang. Fallback ke vision_result jika gagal."""
+    """Panggil reasoning model untuk verifikasi silang. Fallback ke vision_result jika gagal."""
     try:
         prompt = VERIFY_PROMPT.format(vision_json=vision_result.model_dump_json())
-        raw = await ollama_generate(
-            model=settings.ollama_reasoning_model,
-            prompt=prompt,
+        raw = await groq_chat(
+            model=settings.groq_reasoning_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+            max_tokens=512,
         )
-        # Deepseek sering membungkus JSON dalam ```json ... ```
         raw = raw.strip()
         if "```" in raw:
-            # ambil blok json pertama
             start = raw.find("{")
             end = raw.rfind("}") + 1
             raw = raw[start:end]
         data = json.loads(raw)
-        # Merge: deepseek hanya memperbaiki, vision tetap sumber utama untuk health/treatment
         merged = vision_result.model_dump()
         for key in ("plant_name", "scientific_name", "plant_category", "plant_type", "confidence_score"):
             if key in data and data[key] is not None:
-                # Validasi plant_type
                 if key == "plant_type":
                     pt = str(data[key]).lower()
                     if pt in ("tree", "shrub", "herb", "vine", "succulent"):
@@ -53,12 +51,10 @@ async def verify_analysis(vision_result: AnalysisResult) -> AnalysisResult:
                     merged[key] = None
                 else:
                     merged[key] = data[key]
-        # Confidence kalibrasi: clamp
         try:
             merged["confidence_score"] = max(0.0, min(1.0, float(merged["confidence_score"])))
         except Exception:
             pass
         return AnalysisResult(**merged)
     except Exception:
-        # Fallback: kembalikan vision asli
         return vision_result

@@ -66,7 +66,7 @@ async def scan_leaf(
     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Gagal menganalisis via Ollama: {exc}",
+            detail=f"Gagal menganalisis gambar: {exc}",
         )
 
     scan = LeafScan(

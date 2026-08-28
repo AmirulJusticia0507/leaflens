@@ -16,22 +16,6 @@ services:
       timeout: 5s
       retries: 5
 
-  ollama:
-    image: ollama/ollama:latest
-    restart: unless-stopped
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"
-    # Untuk GPU NVIDIA, uncomment deploy.resources.reservations
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
-
   api:
     build:
       context: ./apps/api
@@ -40,13 +24,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      ollama:
-        condition: service_started
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-leaflens}:${POSTGRES_PASSWORD:-leaflens}@postgres:5432/${POSTGRES_DB:-leaflens}
-      OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-moondream}
-      OLLAMA_REASONING_MODEL: ${OLLAMA_REASONING_MODEL:-deepseek-r1}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_VISION_MODEL: ${GROQ_VISION_MODEL:-qwen/qwen3.6-27b}
+      GROQ_REASONING_MODEL: ${GROQ_REASONING_MODEL:-deepseek-r1-distill-llama-70b}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://web:3000}
       STORAGE_DIR: /app/uploads
     volumes:
@@ -69,7 +51,6 @@ services:
         condition: service_healthy
     environment:
       API_PROXY_TARGET: http://api:8000
-      # Kosongkan agar frontend pakai rewrites (same-origin) — paling aman untuk CORS
       NEXT_PUBLIC_API_BASE_URL: ""
       PORT: 3000
       HOSTNAME: 0.0.0.0
@@ -78,5 +59,4 @@ services:
 
 volumes:
   pgdata:
-  ollama_data:
   uploads_data:

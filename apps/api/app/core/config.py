@@ -12,9 +12,16 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     database_url: str = "postgresql+asyncpg://leaflens:leaflens@localhost:5432/leaflens"
     storage_dir: str = "uploads"
-    ollama_base_url: str = "http://localhost:11434"
-    ollama_vision_model: str = "llama3.2-vision"
-    ollama_reasoning_model: str = "deepseek-r1"
+
+    # Groq API (replace Ollama)
+    groq_api_key: str = ""
+    groq_vision_model: str = "qwen/qwen3.6-27b"
+    groq_reasoning_model: str = "deepseek-r1-distill-llama-70b"
+
+    # Legacy Ollama (fallback, optional)
+    ollama_base_url: str = ""
+    ollama_vision_model: str = ""
+    ollama_reasoning_model: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:
