@@ -37,3 +37,6 @@ apps/web/certificates/
 apps/api/app/uploads/
 
 *.tsbuildinfo
+*.apk
+*.idsig
+.gradle/

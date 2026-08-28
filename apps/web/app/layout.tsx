@@ -85,7 +85,7 @@ export default function RootLayout({
           {/* Modern Footer */}
           <footer className="mt-auto border-t border-slate-200/60 bg-white/40 py-6 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/40">
             <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400 sm:flex-row sm:px-6 sm:text-left lg:px-8">
-              <p>© {new Date().getFullYear()} LeafLens AI Engine. Local Vision &amp; Analytics System.</p>
+              <p>© {new Date().getFullYear()} LeafLens AI Engine. Created by Amirul Justicia. All rights reserved.</p>
               <div className="flex items-center gap-4 font-medium">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Ollama Llama3 Vision
