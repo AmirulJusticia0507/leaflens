@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000"
     database_url: str = "postgresql+asyncpg://leaflens:leaflens@localhost:5432/leaflens"
-    storage_dir: str = "uploads"
+    storage_dir: str = "/tmp/uploads" if os.getenv("VERCEL") else "uploads"
 
     # Groq API (replace Ollama)
     groq_api_key: str = ""

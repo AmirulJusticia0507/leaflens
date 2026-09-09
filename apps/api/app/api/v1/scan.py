@@ -81,6 +81,9 @@ async def scan_leaf(
         confidence=analysis.confidence_score,
         full_analysis=analysis.model_dump(),
     )
-    await database.persist(scan)
+    try:
+        await database.persist(scan)
+    except Exception:
+        pass
 
     return ScanResponse(scan_id=str(scan.id), result=analysis)

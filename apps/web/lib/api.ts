@@ -17,6 +17,10 @@ export function getApiBaseUrl(): string {
   }
 
   if (typeof window !== "undefined") {
+    if (window.location.hostname.endsWith("vercel.app")) {
+      return window.location.origin;
+    }
+
     const isCapacitor =
       window.location.protocol === "capacitor:" ||
       window.location.protocol === "file:" ||

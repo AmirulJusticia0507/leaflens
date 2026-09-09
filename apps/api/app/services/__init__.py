@@ -9,6 +9,8 @@ settings = get_settings()
 
 def get_storage_path() -> Path:
     """Path absolut direktori storage gambar (apps/api/<storage_dir>)."""
+    if settings.storage_dir.startswith("/"):
+        return Path(settings.storage_dir)
     return Path(__file__).resolve().parent.parent / settings.storage_dir
 
 
