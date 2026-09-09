@@ -17,7 +17,7 @@ export function getApiBaseUrl(): string {
   }
 
   if (typeof window !== "undefined") {
-    if (window.location.hostname.endsWith("vercel.app")) {
+    if (window.location.protocol === "https:" && process.env.NEXT_PUBLIC_API_BASE_URL == null) {
       return window.location.origin;
     }
 
