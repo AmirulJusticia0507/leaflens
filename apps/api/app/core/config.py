@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     groq_vision_model: str = "qwen/qwen3.6-27b"
     groq_reasoning_model: str = "deepseek-r1-distill-llama-70b"
 
+    # Gemini API (vision scan)
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+
     # Legacy Ollama (fallback, optional)
     ollama_base_url: str = ""
     ollama_vision_model: str = ""

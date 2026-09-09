@@ -356,7 +356,7 @@ export default function ScanUploader() {
         {loading && (
           <div className="flex items-center justify-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <RefreshCw className="h-4 w-4 animate-spin text-emerald-500" />
-            <span>AI Llama3 Vision sedang menganalisis sampel daun...</span>
+            <span>Gemini Vision sedang menganalisis sampel daun...</span>
           </div>
         )}
 
@@ -407,4 +407,3 @@ export default function ScanUploader() {
     </div>
   );
 }
-

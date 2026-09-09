@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 
-from app.core.groq_client import groq_vision
 from app.core.config import get_settings
+from app.core.gemini_client import gemini_vision
 from app.schemas import AnalysisResult
 
 settings = get_settings()
@@ -108,11 +108,12 @@ def _normalize(data: dict) -> dict:
     return data
 
 
-async def analyze_leaf(b64_image: str) -> AnalysisResult:
-    raw = await groq_vision(
-        model=settings.groq_vision_model,
+async def analyze_leaf(b64_image: str, mime_type: str = "image/jpeg") -> AnalysisResult:
+    raw = await gemini_vision(
+        model=settings.gemini_model,
         prompt=SYSTEM_PROMPT,
         image_base64=b64_image,
+        mime_type=mime_type,
     )
     try:
         data = json.loads(raw)

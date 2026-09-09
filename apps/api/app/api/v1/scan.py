@@ -56,7 +56,7 @@ async def scan_leaf(
 
     b64_image = base64.b64encode(contents).decode("utf-8")
     try:
-        analysis: AnalysisResult = await analyze_leaf(b64_image)
+        analysis: AnalysisResult = await analyze_leaf(b64_image, image_file.content_type)
         # Hybrid verification jika confidence rendah atau nama generik
         if analysis.confidence_score < 0.85 or len(analysis.plant_name.split()) <= 1:
             try:
