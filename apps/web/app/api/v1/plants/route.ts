@@ -17,6 +17,7 @@ export async function GET() {
     plant_type: plant.plant_type,
     avg_lifespan: plant.avg_lifespan,
     growth_speed: plant.growth_speed,
+    image_url: null,
   }));
 
   return NextResponse.json(plants);

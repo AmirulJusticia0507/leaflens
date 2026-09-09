@@ -116,6 +116,7 @@ export async function POST(request: Request) {
       locationType: String(form.get("location_type") || ""),
       latitude: form.get("latitude") ? Number(form.get("latitude")) : null,
       longitude: form.get("longitude") ? Number(form.get("longitude")) : null,
+      imageUrl: `data:${file.type};base64,${imageBase64}`,
       result,
     }).catch(() => crypto.randomUUID());
     const body: ScanResponse = { scan_id: scanId, result };

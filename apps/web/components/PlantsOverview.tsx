@@ -191,6 +191,17 @@ export default function PlantsOverview() {
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Terdaftar
                   </span>
                 </div>
+
+                {plant.image_url && (
+                  <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-950">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={plant.image_url}
+                      alt={plant.common_name}
+                      className="h-36 w-full object-cover"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -199,4 +210,3 @@ export default function PlantsOverview() {
     </div>
   );
 }
-

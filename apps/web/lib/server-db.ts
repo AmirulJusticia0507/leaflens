@@ -106,9 +106,17 @@ export async function getPlants(): Promise<PlantPublic[]> {
   if (!db) return [];
   await ensureTables();
   const result = await db.query<PlantPublic>(`
-    select id::text, common_name, scientific_name, plant_type, avg_lifespan, growth_speed
-    from plants
-    order by common_name asc
+    select distinct on (p.id)
+      p.id::text,
+      p.common_name,
+      p.scientific_name,
+      p.plant_type,
+      p.avg_lifespan,
+      p.growth_speed,
+      s.image_url
+    from plants p
+    left join leaf_scans s on s.plant_id = p.id
+    order by p.id, s.scanned_at desc nulls last
   `);
   return result.rows;
 }

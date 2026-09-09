@@ -61,4 +61,5 @@ export interface PlantPublic {
   plant_type: PlantType;
   avg_lifespan: string | null;
   growth_speed: string | null;
+  image_url?: string | null;
 }
