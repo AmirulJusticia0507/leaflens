@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { queueScan, getPendingScans, removePendingScan, countPending } from "@/lib/offline-queue";
+import { queueScan, getPendingScans, removePendingScan, countPending, clearPendingScans } from "@/lib/offline-queue";
 import LeafResultCard from "@/components/LeafResultCard";
 import SaveToTrackerForm from "@/components/SaveToTrackerForm";
 import type { ScanResponse } from "@leaflens/shared";
@@ -71,6 +71,7 @@ export default function ScanUploader() {
   // --- Offline queue ---
   const [pendingCount, setPendingCount] = useState(0);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   useEffect(() => {
     countPending().then(setPendingCount).catch(() => {});
     const onOnline = () => {
@@ -82,15 +83,39 @@ export default function ScanUploader() {
   }, []);
 
   async function syncPending() {
+    setSyncing(true);
+    setQueueMsg(null);
     const pending = await getPendingScans().catch(() => []);
+    let synced = 0;
+    let failedMsg: string | null = null;
     for (const p of pending) {
       try {
         const f = new File([p.file], p.fileName, { type: p.fileType });
         await api.uploadScan(f, p.sourceType, p.locationType, p.latitude != null ? { latitude: p.latitude, longitude: p.longitude! } : undefined);
         if (p.id != null) await removePendingScan(p.id);
-      } catch {}
+        synced += 1;
+      } catch (e) {
+        failedMsg = e instanceof Error ? e.message : "Sinkronisasi gagal.";
+        break;
+      }
     }
-    countPending().then(setPendingCount).catch(() => {});
+    const remaining = await countPending().catch(() => 0);
+    setPendingCount(remaining);
+    setSyncing(false);
+    if (failedMsg) {
+      setQueueMsg(`Sinkronisasi gagal: ${failedMsg}`);
+      toast.error("Sinkronisasi Gagal", failedMsg);
+    } else if (synced > 0) {
+      setQueueMsg(null);
+      toast.success("Sinkronisasi Berhasil", `${synced} scan tertunda berhasil dikirim.`);
+    }
+  }
+
+  async function clearPending() {
+    await clearPendingScans();
+    setPendingCount(0);
+    setQueueMsg(null);
+    toast.info("Antrean Dihapus", "Scan tertunda lokal sudah dibersihkan.");
   }
 
   async function acquirePosition(): Promise<{ latitude: number; longitude: number } | null> {
@@ -375,9 +400,13 @@ export default function ScanUploader() {
             </span>
             <button
               onClick={() => void syncPending()}
+              disabled={syncing}
               className="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-700"
             >
-              Coba Kirim Ulang
+              {syncing ? "Mengirim..." : "Coba Kirim Ulang"}
+            </button>
+            <button onClick={() => void clearPending()} className="shrink-0 text-xs font-bold text-amber-700 hover:underline dark:text-amber-300">
+              Hapus
             </button>
           </div>
         )}
@@ -387,9 +416,14 @@ export default function ScanUploader() {
             <span className="font-semibold text-slate-600 dark:text-slate-300">
               {pendingCount} scan tertunda (offline)
             </span>
-            <button onClick={() => void syncPending()} className="font-bold text-emerald-600 hover:underline">
-              Sinkronkan
-            </button>
+            <div className="flex items-center gap-3">
+              <button disabled={syncing} onClick={() => void syncPending()} className="font-bold text-emerald-600 hover:underline disabled:text-slate-400">
+                {syncing ? "Mengirim..." : "Sinkronkan"}
+              </button>
+              <button onClick={() => void clearPending()} className="font-bold text-slate-500 hover:underline">
+                Hapus
+              </button>
+            </div>
           </div>
         )}
       </div>
