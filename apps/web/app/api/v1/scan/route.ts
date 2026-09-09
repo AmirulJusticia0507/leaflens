@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { AnalysisResult, PlantType, ScanResponse } from "@leaflens/shared";
+import { saveScan } from "@/lib/server-db";
 
 export const runtime = "nodejs";
 
@@ -109,7 +110,14 @@ export async function POST(request: Request) {
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}") + 1;
     const result = normalize(JSON.parse(start >= 0 ? raw.slice(start, end) : raw));
-    const body: ScanResponse = { scan_id: crypto.randomUUID(), result };
+    const scanId = await saveScan({
+      sourceType: form.get("source_type") === "camera" ? "camera" : "upload",
+      locationType: String(form.get("location_type") || ""),
+      latitude: form.get("latitude") ? Number(form.get("latitude")) : null,
+      longitude: form.get("longitude") ? Number(form.get("longitude")) : null,
+      result,
+    });
+    const body: ScanResponse = { scan_id: scanId, result };
 
     return NextResponse.json(body);
   } catch (error) {
