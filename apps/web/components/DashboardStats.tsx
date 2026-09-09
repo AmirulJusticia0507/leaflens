@@ -92,7 +92,7 @@ export default function DashboardStats() {
       title: "Akurasi Vision AI",
       value: loading ? "..." : `${stats.avgConfidence}%`,
       unit: "Tingkat presisi model",
-      badge: "Llama3 Vision",
+      badge: "Gemini Vision",
       badgeColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
       icon: Sparkles,
       gradient: "from-amber-500 to-emerald-600",
