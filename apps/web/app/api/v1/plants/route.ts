@@ -4,9 +4,10 @@ import type { PlantPublic } from "@leaflens/shared";
 import { addPlantFromScan, getPlants } from "@/lib/server-db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const savedPlants = await getPlants();
+  const savedPlants = await getPlants().catch(() => []);
   if (savedPlants.length > 0) return NextResponse.json(savedPlants);
 
   const plants: PlantPublic[] = INDONESIAN_PLANTS.map((plant, index) => ({

@@ -3,6 +3,7 @@ import type { AnalysisResult, PlantType, ScanResponse } from "@leaflens/shared";
 import { saveScan } from "@/lib/server-db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
       latitude: form.get("latitude") ? Number(form.get("latitude")) : null,
       longitude: form.get("longitude") ? Number(form.get("longitude")) : null,
       result,
-    });
+    }).catch(() => crypto.randomUUID());
     const body: ScanResponse = { scan_id: scanId, result };
 
     return NextResponse.json(body);
