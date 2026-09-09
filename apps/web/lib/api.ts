@@ -5,6 +5,22 @@ import type {
   PlantPublic,
   PlantCreate,
 } from "@leaflens/shared";
+import { INDONESIAN_PLANTS } from "@leaflens/shared";
+
+function localPlants(): PlantPublic[] {
+  return INDONESIAN_PLANTS.map((plant, index) => ({
+    id: String(index + 1),
+    common_name: plant.common_name,
+    scientific_name: plant.scientific_name,
+    plant_type: plant.plant_type,
+    avg_lifespan: plant.avg_lifespan,
+    growth_speed: plant.growth_speed,
+    image_url: null,
+    scanned_at: null,
+    health_status: null,
+    confidence: null,
+  }));
+}
 
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -42,7 +58,7 @@ async function handleResponse<T>(res: Response, fallbackErrorMsg: string): Promi
     const text = await res.text().catch(() => "");
     if (res.status === 404 || contentType.includes("text/html")) {
       throw new Error(
-        `Server API backend (${baseUrl}) tidak dapat dijangkau (HTTP ${res.status}). Pastikan server FastAPI aktif.`
+        `Endpoint API (${baseUrl}) tidak ditemukan (HTTP ${res.status}).`
       );
     }
     throw new Error(`${fallbackErrorMsg} (HTTP ${res.status}): ${text.slice(0, 150)}`);
@@ -81,7 +97,7 @@ async function fetchHistory(plantId?: string): Promise<HistoryItem[]> {
   const baseUrl = getApiBaseUrl();
   const qs = plantId ? `?plant_id=${encodeURIComponent(plantId)}` : "";
   const res = await fetch(`${baseUrl}/api/v1/history${qs}`);
-  return handleResponse<HistoryItem[]>(res, "History gagal");
+  return handleResponse<HistoryItem[]>(res, "History gagal").catch(() => []);
 }
 
 async function fetchMonthlyHealth(
@@ -92,7 +108,7 @@ async function fetchMonthlyHealth(
   const params = new URLSearchParams({ months: String(months) });
   if (plantId) params.set("plant_id", plantId);
   const res = await fetch(`${baseUrl}/api/v1/history/monthly-health?${params}`);
-  return handleResponse<MonthlyHealthPoint[]>(res, "Grafik kesehatan gagal");
+  return handleResponse<MonthlyHealthPoint[]>(res, "Grafik kesehatan gagal").catch(() => []);
 }
 
 async function addPlant(payload: PlantCreate): Promise<PlantPublic> {
@@ -108,13 +124,17 @@ async function addPlant(payload: PlantCreate): Promise<PlantPublic> {
 async function fetchPlants(): Promise<PlantPublic[]> {
   const baseUrl = getApiBaseUrl();
   const res = await fetch(`${baseUrl}/api/v1/plants`);
-  return handleResponse<PlantPublic[]>(res, "Gagal memuat daftar tanaman");
+  return handleResponse<PlantPublic[]>(res, "Gagal memuat daftar tanaman").catch(() => localPlants());
 }
 
 async function fetchPlant(id: string): Promise<PlantPublic> {
   const baseUrl = getApiBaseUrl();
   const res = await fetch(`${baseUrl}/api/v1/plants/${encodeURIComponent(id)}`);
-  return handleResponse<PlantPublic>(res, "Gagal memuat detail tanaman");
+  return handleResponse<PlantPublic>(res, "Gagal memuat detail tanaman").catch(() => {
+    const plant = localPlants().find((item) => item.id === id);
+    if (plant) return plant;
+    throw new Error("Tanaman tidak ditemukan");
+  });
 }
 
 export const API_BASE = getApiBaseUrl();
