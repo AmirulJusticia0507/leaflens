@@ -111,6 +111,12 @@ async function fetchPlants(): Promise<PlantPublic[]> {
   return handleResponse<PlantPublic[]>(res, "Gagal memuat daftar tanaman");
 }
 
+async function fetchPlant(id: string): Promise<PlantPublic> {
+  const baseUrl = getApiBaseUrl();
+  const res = await fetch(`${baseUrl}/api/v1/plants/${encodeURIComponent(id)}`);
+  return handleResponse<PlantPublic>(res, "Gagal memuat detail tanaman");
+}
+
 export const API_BASE = getApiBaseUrl();
-export const api = { uploadScan, fetchHistory, fetchMonthlyHealth, addPlant, fetchPlants };
+export const api = { uploadScan, fetchHistory, fetchMonthlyHealth, addPlant, fetchPlants, fetchPlant };
 export type { ScanResponse, HistoryItem, MonthlyHealthPoint, PlantPublic, PlantCreate };

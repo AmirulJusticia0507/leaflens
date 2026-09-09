@@ -113,12 +113,40 @@ export async function getPlants(): Promise<PlantPublic[]> {
       p.plant_type,
       p.avg_lifespan,
       p.growth_speed,
-      s.image_url
+      s.image_url,
+      s.scanned_at::text as scanned_at,
+      s.full_analysis->>'health_status' as health_status,
+      s.confidence
     from plants p
     left join leaf_scans s on s.plant_id = p.id
     order by p.id, s.scanned_at desc nulls last
   `);
   return result.rows;
+}
+
+export async function getPlant(id: string): Promise<PlantPublic | null> {
+  const db = getPool();
+  if (!db) return null;
+  await ensureTables();
+  const result = await db.query<PlantPublic>(
+    `select distinct on (p.id)
+      p.id::text,
+      p.common_name,
+      p.scientific_name,
+      p.plant_type,
+      p.avg_lifespan,
+      p.growth_speed,
+      s.image_url,
+      s.scanned_at::text as scanned_at,
+      s.full_analysis->>'health_status' as health_status,
+      s.confidence
+    from plants p
+    left join leaf_scans s on s.plant_id = p.id
+    where p.id = $1
+    order by p.id, s.scanned_at desc nulls last`,
+    [id],
+  );
+  return result.rows[0] ?? null;
 }
 
 export async function addPlantFromScan(scanId: string, nickname: string): Promise<PlantPublic> {

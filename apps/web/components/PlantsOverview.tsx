@@ -139,8 +139,9 @@ export default function PlantsOverview() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPlants.map((plant) => (
-            <div
+            <Link
               key={plant.id}
+              href={`/plants/${plant.id}`}
               className="group relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/70 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 hover:bg-white hover:shadow-xl hover:shadow-emerald-500/10 dark:border-slate-800/80 dark:bg-slate-900/80 dark:hover:bg-slate-900"
             >
               {/* Header: Plant Name & Badge */}
@@ -203,7 +204,7 @@ export default function PlantsOverview() {
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

@@ -62,4 +62,7 @@ export interface PlantPublic {
   avg_lifespan: string | null;
   growth_speed: string | null;
   image_url?: string | null;
+  scanned_at?: string | null;
+  health_status?: string | null;
+  confidence?: number | null;
 }
