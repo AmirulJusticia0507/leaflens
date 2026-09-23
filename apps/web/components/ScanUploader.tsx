@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { queueScan, getPendingScans, removePendingScan, countPending, clearPendingScans } from "@/lib/offline-queue";
 import LeafResultCard from "@/components/LeafResultCard";
 import SaveToTrackerForm from "@/components/SaveToTrackerForm";
+import VoiceAssistant from "@/components/VoiceAssistant";
 import type { ScanResponse } from "@leaflens/shared";
 import { Camera, Upload, MapPin, StopCircle, Sparkles, AlertCircle, RefreshCw, Navigation, CloudOff } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
@@ -435,6 +436,7 @@ export default function ScanUploader() {
             <Sparkles className="h-4 w-4 text-emerald-500" /> Hasil Analisis Vision AI
           </div>
           <LeafResultCard result={result.result} />
+          <VoiceAssistant diagnosis={result.result} />
           <SaveToTrackerForm scanId={result.scan_id} />
         </div>
       )}
