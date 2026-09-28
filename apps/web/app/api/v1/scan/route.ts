@@ -105,7 +105,7 @@ async function geminiVision(imageBase64: string, mimeType: string): Promise<stri
       }],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
       },
@@ -133,6 +133,7 @@ export async function POST(request: Request) {
 
     const imageBase64 = Buffer.from(await file.arrayBuffer()).toString("base64");
     const raw = await geminiVision(imageBase64, file.type);
+    if (!raw.trim()) throw new Error("Gemini tidak mengembalikan hasil analisis. Coba scan ulang.");
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}") + 1;
     const result = normalize(JSON.parse(start >= 0 ? raw.slice(start, end) : raw));

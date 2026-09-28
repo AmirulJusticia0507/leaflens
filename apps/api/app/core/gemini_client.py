@@ -41,7 +41,7 @@ async def gemini_vision(
     image_base64: str,
     mime_type: str = "image/jpeg",
     temperature: float = 0.2,
-    max_tokens: int = 1024,
+    max_tokens: int = 2048,
 ) -> str:
     if not settings.gemini_api_key:
         raise RuntimeError("GEMINI_API_KEY belum diatur")
