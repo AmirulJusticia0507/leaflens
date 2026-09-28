@@ -87,6 +87,18 @@ function normalize(data: Record<string, any>): AnalysisResult {
   };
 }
 
+function parseVisionJson(raw: string): Record<string, any> {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}") + 1;
+  const json = start >= 0 && end > start ? raw.slice(start, end) : raw;
+  try {
+    return JSON.parse(json);
+  } catch {
+    // Some models occasionally omit a comma between JSON properties.
+    return JSON.parse(json.replace(/(["\]}])\s*(?="(?:[^"\\]|\\.)+"\s*:)/g, "$1,"));
+  }
+}
+
 async function geminiVision(imageBase64: string, mimeType: string): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -134,9 +146,7 @@ export async function POST(request: Request) {
     const imageBase64 = Buffer.from(await file.arrayBuffer()).toString("base64");
     const raw = await geminiVision(imageBase64, file.type);
     if (!raw.trim()) throw new Error("Gemini tidak mengembalikan hasil analisis. Coba scan ulang.");
-    const start = raw.indexOf("{");
-    const end = raw.lastIndexOf("}") + 1;
-    const result = normalize(JSON.parse(start >= 0 ? raw.slice(start, end) : raw));
+    const result = normalize(parseVisionJson(raw));
     const scanId = await saveScan({
       sourceType: form.get("source_type") === "camera" ? "camera" : "upload",
       locationType: String(form.get("location_type") || ""),

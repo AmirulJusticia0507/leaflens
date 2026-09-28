@@ -1,12 +1,24 @@
 from __future__ import annotations
 
 import json
+import re
 
 from app.core.config import get_settings
 from app.core.gemini_client import gemini_vision
 from app.schemas import AnalysisResult
 
 settings = get_settings()
+
+
+def _parse_vision_json(raw: str) -> dict:
+    """Parse response model, tolerating a missing comma between properties."""
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+    raw = raw[start:end] if start >= 0 and end > start else raw
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return json.loads(re.sub(r'(["\]}])\s*(?="(?:[^"\\]|\\.)+"\s*:)', r'\1,', raw))
 
 SYSTEM_PROMPT = """You are a professional botanist. Analyze this leaf image.
 Respond ONLY with valid JSON, no markdown, no extra text. Use EXACTLY these snake_case keys:
@@ -115,11 +127,6 @@ async def analyze_leaf(b64_image: str, mime_type: str = "image/jpeg") -> Analysi
         image_base64=b64_image,
         mime_type=mime_type,
     )
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        start = raw.find("{")
-        end = raw.rfind("}") + 1
-        data = json.loads(raw[start:end])
+    data = _parse_vision_json(raw)
     data = _normalize(data)
     return AnalysisResult(**data)
