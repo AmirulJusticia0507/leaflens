@@ -11,14 +11,45 @@ settings = get_settings()
 
 
 def _parse_vision_json(raw: str) -> dict:
-    """Parse response model, tolerating a missing comma between properties."""
+    """Parse response model, tolerating common minor JSON errors."""
     start = raw.find("{")
     end = raw.rfind("}") + 1
     raw = raw[start:end] if start >= 0 and end > start else raw
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
-        return json.loads(re.sub(r'(["\]}])\s*(?="(?:[^"\\]|\\.)+"\s*:)', r'\1,', raw))
+        return json.loads(_repair_vision_json(raw))
+
+
+def _repair_vision_json(raw: str) -> str:
+    result: list[str] = []
+    in_string = escaped = False
+    for i, char in enumerate(raw):
+        if not in_string:
+            in_string = char == '"'
+            result.append(char)
+            continue
+        if escaped:
+            escaped = False
+            result.append(char)
+        elif char == "\\":
+            escaped = True
+            result.append(char)
+        elif char in "\r\n":
+            result.append("\\n")
+        elif char != '"':
+            result.append(char)
+        else:
+            remaining = raw[i + 1:].lstrip()
+            next_char = remaining[:1]
+            if next_char and next_char not in ':,]}"':
+                result.append('\\"')
+            else:
+                result.append(char)
+                in_string = False
+                if next_char == '"':
+                    result.append(",")
+    return re.sub(r'(["\]}])\s*(?="(?:[^"\\]|\\.)+"\s*:)', r'\1,', "".join(result))
 
 SYSTEM_PROMPT = """You are a professional botanist. Analyze this leaf image.
 Respond ONLY with valid JSON, no markdown, no extra text. Use EXACTLY these snake_case keys:

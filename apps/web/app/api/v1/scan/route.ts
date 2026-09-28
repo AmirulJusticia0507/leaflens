@@ -94,9 +94,54 @@ function parseVisionJson(raw: string): Record<string, any> {
   try {
     return JSON.parse(json);
   } catch {
-    // Some models occasionally omit a comma between JSON properties.
-    return JSON.parse(json.replace(/(["\]}])\s*(?="(?:[^"\\]|\\.)+"\s*:)/g, "$1,"));
+    return JSON.parse(repairVisionJson(json));
   }
+}
+
+function repairVisionJson(json: string): string {
+  let result = "";
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < json.length; i += 1) {
+    const char = json[i];
+    if (!inString) {
+      if (char === '"') inString = true;
+      result += char;
+      continue;
+    }
+    if (escaped) {
+      escaped = false;
+      result += char;
+      continue;
+    }
+    if (char === "\\") {
+      escaped = true;
+      result += char;
+      continue;
+    }
+    if (char === "\n" || char === "\r") {
+      result += "\\n";
+      continue;
+    }
+    if (char !== '"') {
+      result += char;
+      continue;
+    }
+
+    let nextIndex = i + 1;
+    while (/\s/.test(json[nextIndex] || "")) nextIndex += 1;
+    const next = json[nextIndex];
+    if (next && ![":", ",", "}", "]", '"'].includes(next)) {
+      result += '\\"'; // Unescaped quote inside an AI-generated string.
+    } else {
+      result += char;
+      inString = false;
+      if (next === '"') result += ","; // Missing comma before the next property.
+    }
+  }
+
+  return result.replace(/(["\]}])\s*(?="(?:[^"\\]|\\.)+"\s*:)/g, "$1,");
 }
 
 async function geminiVision(imageBase64: string, mimeType: string): Promise<string> {
