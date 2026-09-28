@@ -7,6 +7,30 @@ export const dynamic = "force-dynamic";
 
 const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    plant_name: { type: "STRING" },
+    scientific_name: { type: "STRING", nullable: true },
+    plant_category: { type: "STRING", nullable: true },
+    plant_type: { type: "STRING" },
+    growth_time_info: {
+      type: "OBJECT",
+      properties: {
+        time_to_mature: { type: "STRING" },
+        lifespan: { type: "STRING" },
+        growth_rate: { type: "STRING" },
+      },
+      required: ["time_to_mature", "lifespan", "growth_rate"],
+    },
+    leaf_characteristics: { type: "STRING" },
+    care_summary: { type: "STRING" },
+    health_status: { type: "STRING" },
+    treatment_steps: { type: "ARRAY", items: { type: "STRING" } },
+    confidence_score: { type: "NUMBER" },
+  },
+  required: ["plant_name", "plant_type", "growth_time_info", "leaf_characteristics", "care_summary", "health_status", "treatment_steps", "confidence_score"],
+};
 
 const SYSTEM_PROMPT = `You are a professional botanist. Analyze this leaf image.
 Respond ONLY with valid JSON, no markdown, no extra text. Use EXACTLY these snake_case keys:
@@ -83,6 +107,7 @@ async function geminiVision(imageBase64: string, mimeType: string): Promise<stri
         temperature: 0.2,
         maxOutputTokens: 1024,
         responseMimeType: "application/json",
+        responseSchema: RESPONSE_SCHEMA,
       },
     }),
   });

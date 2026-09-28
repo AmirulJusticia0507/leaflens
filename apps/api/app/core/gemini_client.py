@@ -6,6 +6,34 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
+LEAF_RESPONSE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "plant_name": {"type": "STRING"},
+        "scientific_name": {"type": "STRING", "nullable": True},
+        "plant_category": {"type": "STRING", "nullable": True},
+        "plant_type": {"type": "STRING"},
+        "growth_time_info": {
+            "type": "OBJECT",
+            "properties": {
+                "time_to_mature": {"type": "STRING"},
+                "lifespan": {"type": "STRING"},
+                "growth_rate": {"type": "STRING"},
+            },
+            "required": ["time_to_mature", "lifespan", "growth_rate"],
+        },
+        "leaf_characteristics": {"type": "STRING"},
+        "care_summary": {"type": "STRING"},
+        "health_status": {"type": "STRING"},
+        "treatment_steps": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "confidence_score": {"type": "NUMBER"},
+    },
+    "required": [
+        "plant_name", "plant_type", "growth_time_info", "leaf_characteristics",
+        "care_summary", "health_status", "treatment_steps", "confidence_score",
+    ],
+}
+
 
 async def gemini_vision(
     model: str,
@@ -33,6 +61,7 @@ async def gemini_vision(
             "temperature": temperature,
             "maxOutputTokens": max_tokens,
             "responseMimeType": "application/json",
+            "responseSchema": LEAF_RESPONSE_SCHEMA,
         },
     }
 
